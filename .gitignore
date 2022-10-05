@@ -1,5 +1,5 @@
-scripts/
-docs/
-ca.crt
-.idea/
 *.bak
+.idea/
+ca.crt
+docs/
+scripts/
