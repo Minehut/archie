@@ -136,8 +136,9 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 			sendNakSignal(msg, &mLog)
 			a.cleanupAndCountMessagesProcessedMetric("failed", s3ErrMsg, s3ErrCode, event.EventName, eventType)
 		case FiveNakThenTerm:
-			if metadata.NumDelivered > 5 {
-				mLog.Error().Err(err).Msgf("Terminating retries of this operation after %d attempts", err.Error(), metadata.NumDelivered-1)
+			maxDelivered := uint64(5)
+			if metadata.NumDelivered > maxDelivered {
+				mLog.Error().Uint64("numDelivered", metadata.NumDelivered).Msg("Reached max delivered")
 				termErr := sendTermSignal(msg, &mLog)
 				if termErr != nil {
 					// logging already happened
