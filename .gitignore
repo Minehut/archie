@@ -1,3 +1,5 @@
 scripts/
 docs/
 ca.crt
+.idea/
+*.bak
