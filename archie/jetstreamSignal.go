@@ -1,6 +1,7 @@
 package archie
 
 import (
+	"errors"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"math"
@@ -41,24 +42,23 @@ func sendTermSignal(msg *nats.Msg, mLog *zerolog.Logger) error {
 	err := msg.Term()
 	if err != nil {
 		mLog.Error().Err(err).Msg("Failed to complete JetStream Term signal")
-		sendNakSignal(msg, mLog)
 		return err
 	}
 	return nil
 }
 
-// msgs will continue to redeliver via with this exponential backoff
+// msgs will continue to redeliver via this exponential backoff,
 // if the Nak fails just let jetstream redeliver after its timeout
 func sendNakSignal(msg *nats.Msg, mLog *zerolog.Logger) {
 	metadata, _ := msg.Metadata()
-	var maxDelivered uint64 = 15 // 54m36.6s
+	var numDeliveredLimit uint64 = 15 // 54m36.6s
 
-	numDelivered := maxDelivered
-	if metadata.NumDelivered < maxDelivered {
-		numDelivered = metadata.NumDelivered
+	numDeliveredPower := numDeliveredLimit
+	if metadata.NumDelivered < numDeliveredLimit {
+		numDeliveredPower = metadata.NumDelivered
 	}
 
-	delay := time.Duration(int64(math.Pow(2, float64(numDelivered)))) * 100 * time.Millisecond
+	delay := time.Duration(int64(math.Pow(2, float64(numDeliveredPower)))) * 100 * time.Millisecond
 
 	mLog.Info().Msgf("Sending JetStream NAck signal and requesting redelivery in %s", delay.String())
 
