@@ -48,7 +48,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 	eventType := strings.Join(strings.Split(event.EventName, ":")[0:2], ":")
 
 	// per-message logger
-	mLog := log.With().Str("key", eventKey).Str("event", event.EventName).Logger()
+	mLog := log.With().Str("key", eventKey).Str("event", event.EventName).Uint64("seq", metadata.Sequence.Stream).Logger()
 
 	// validation
 	err = a.validateEventName(event)
