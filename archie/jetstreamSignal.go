@@ -9,14 +9,29 @@ import (
 
 // server confirmed ack (double ack)
 func sendAckSignal(msg *nats.Msg, mLog *zerolog.Logger) error {
-	// TODO: make this timeout configurable?
-	err := msg.AckSync(nats.AckWait(2 * time.Second))
-	if err != nil {
-		mLog.Error().Err(err).Msg("Failed to complete JetStream Ack signal")
-		sendNakSignal(msg, mLog)
-		return err
+	attempt := 1
+	maxAttempt := 4
+
+	for attempt <= maxAttempt {
+		// TODO: make this timeout configurable
+		err := msg.AckSync(nats.AckWait(3 * time.Second))
+		if err != nil {
+			if attempt == maxAttempt {
+				mLog.Error().Err(err).Int("attempt", attempt).Msg("Reached maximum attempt")
+				return err
+			} else {
+				mLog.Error().Err(err).
+					Int("attempt", attempt).
+					Int("maxAttempt", maxAttempt).
+					Msg("Failed to complete JetStream Ack signal")
+				time.Sleep(1 * time.Second)
+				attempt++
+				continue
+			}
+		}
+		return nil
 	}
-	return nil
+	return errors.New("unknown error")
 }
 
 // terminate message redelivery
