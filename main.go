@@ -18,7 +18,7 @@ func main() {
 	destBucket := flag.String("dest-bucket", LookupEnvOrString("DEST_BUCKET", ""), "destination bucket name")
 	destEndpoint := flag.String("dest-endpoint", LookupEnvOrString("DEST_ENDPOINT", "localhost:9000"), "destination endpoint")
 	destName := flag.String("dest-name", LookupEnvOrString("DEST_NAME", "b2"), "destination display name")
-	destPartSize := flag.Uint64("dest-part-size-mbytes", LookupEnvOrUint64("DEST_PART_SIZE_MBYTES", 16), "upload part size in MB")
+	destPartSize := flag.Uint64("dest-part-size", LookupEnvOrUint64("DEST_PART_SIZE", 16), "upload part size in mebibytes")
 	destSecretAccessKey := flag.String("dest-secret-access-key", LookupEnvOrString("DEST_SECRET_ACCESS_KEY", ""), "destination secret access key")
 	destThreads := flag.Uint("dest-threads", LookupEnvOrUint("DEST_THREADS", 4), "number of upload threads")
 	destUseSSL := flag.Bool("dest-use-ssl", LookupEnvOrBool("DEST_USE_SSL", true), "use ssl connection for the destination bucket")
@@ -31,7 +31,7 @@ func main() {
 	jetStreamRootCA := flag.String("jetstream-root-ca", LookupEnvOrString("JETSTREAM_ROOT_CA", ""), "path to the root CA cert file")
 	jetStreamStream := flag.String("jetstream-stream", LookupEnvOrString("JETSTREAM_STREAM", "archie-stream"), "jetstream stream name")
 	jetStreamStreamMaxAge := flag.String("jetstream-stream-max-age", LookupEnvOrString("JETSTREAM_STREAM_MAX_AGE", "72h"), "max duration to persist JetStream messages in the stream")
-	jetStreamStreamMaxMBytes := flag.Int64("jetstream-stream-max-mbytes", LookupEnvOrInt64("JETSTREAM_STREAM_MAX_MBYTES", -1), "max size of stream in megabytes")
+	jetStreamStreamMaxSize := flag.Int64("jetstream-stream-max", LookupEnvOrInt64("JETSTREAM_STREAM_MAX_SIZE", -1), "max size of stream in megabytes")
 	jetStreamStreamReplicas := flag.Int("jetstream-stream-replicas", LookupEnvOrInt("JETSTREAM_STREAM_REPLICAS", 1), "number of replicas for the stream data")
 	jetreamStreamRePublishEnabled := flag.Bool("jetstream-stream-republish-enabled", LookupEnvOrBool("JETSTREAM_STREAM_REPUBLISH_ENABLED", false), "re-publish messages from the main stream to a separate archive stream")
 	jetStreamSubject := flag.String("jetstream-subject", LookupEnvOrString("JETSTREAM_SUBJECT", "minioevents"), "nats jetstream subject to subscribe to")
@@ -141,7 +141,7 @@ func main() {
 		*jetStreamPassword,
 		*jetStreamStreamReplicas,
 		*jetStreamMaxAckPending,
-		*jetStreamStreamMaxMBytes,
+		*jetStreamStreamMaxSize,
 		*msgTimeout,
 		*jetreamStreamRePublishEnabled,
 	)

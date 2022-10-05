@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func JetStream(url, subject, stream, durableConsumer, streamMaxAge, rootCA, username, password string, streamReplicas, maxAckPending int, streamMaxMBytes int64, msgTimeout string, jetreamStreamRePublishEnabled bool) (*nats.Subscription, *nats.Conn) {
+func JetStream(url, subject, stream, durableConsumer, streamMaxAgeDur, rootCA, username, password string, streamReplicas, maxAckPending int, streamMaxSize int64, msgTimeout string, jetreamStreamRePublishEnabled bool) (*nats.Subscription, *nats.Conn) {
 	var connectOptions []nats.Option
 	if rootCA != "" {
 		connectOptions = append(connectOptions, nats.RootCAs(rootCA))
@@ -31,21 +31,21 @@ func JetStream(url, subject, stream, durableConsumer, streamMaxAge, rootCA, user
 	// TODO: output some information about the JetStream server
 
 	// build the stream
-	maxAge, err := time.ParseDuration(streamMaxAge)
+	streamMaxAge, err := time.ParseDuration(streamMaxAgeDur)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to parse jetstream-max-age duration argument")
 	}
 
-	maxBytes := int64(-1)
-	if streamMaxMBytes != -1 {
-		maxBytes = 1024 * 1024 * streamMaxMBytes
+	streamMaxBytes := int64(-1)
+	if streamMaxSize != -1 {
+		streamMaxBytes = 1_000_000 * streamMaxSize // Megabytes
 	}
 
 	streamConfig := &nats.StreamConfig{
 		Name:      stream,
 		Subjects:  []string{subject},
-		MaxAge:    maxAge,
-		MaxBytes:  maxBytes,       // TODO: test this
+		MaxAge:    streamMaxAge,
+		MaxBytes:  -1,             // TODO: fix this
 		Replicas:  streamReplicas, // TODO: test this
 		Retention: nats.LimitsPolicy,
 	}
@@ -62,8 +62,8 @@ func JetStream(url, subject, stream, durableConsumer, streamMaxAge, rootCA, user
 		archiveStreamConfig := &nats.StreamConfig{
 			Name:      fmt.Sprintf("%s-archive", stream),
 			Subjects:  []string{fmt.Sprintf("%s-archive", subject)},
-			MaxAge:    maxAge,
-			MaxBytes:  maxBytes,       // TODO: test this
+			MaxAge:    streamMaxAge,
+			MaxBytes:  streamMaxBytes, // TODO: test this
 			Replicas:  streamReplicas, // TODO: test this
 			Retention: nats.LimitsPolicy,
 		}

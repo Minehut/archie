@@ -34,11 +34,11 @@ func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObj
 		Msg("Transfer started")
 
 	// put dest object
-	destPartSize := 1024 * 1024 * a.DestPartSize
+	destPartSizeBytes := 1024 * 1024 * a.DestPartSize
 	putOpts := minio.PutObjectOptions{
 		ContentType: srcStat.ContentType,
 		NumThreads:  a.DestThreads,
-		PartSize:    destPartSize,
+		PartSize:    destPartSizeBytes,
 	}
 
 	start = time.Now()
