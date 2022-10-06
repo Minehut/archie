@@ -1,5 +1,4 @@
 *.bak
 .idea/
 ca.crt
-docs/
 scripts/

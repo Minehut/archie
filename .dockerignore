@@ -1,7 +1,8 @@
 .dockerignore
-ca.crt
-deploy.sh
 Dockerfile
-docs
 LICENSE
 README.md
+ca.crt
+dashboard
+diagram
+scripts

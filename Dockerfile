@@ -1,5 +1,5 @@
-# builder image
-FROM --platform=linux/amd64 golang:1.18-alpine3.16 as builder
+
+FROM --platform=linux/amd64 golang:1.19-alpine3.16 as builder
 
 RUN mkdir /build
 
@@ -9,8 +9,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -o archie .
 
-# final image for end users
-FROM --platform=linux/amd64 alpine:3.16.2
+FROM --platform=linux/amd64 alpine:3.16.2 as final
 
 RUN apk add --update \
                 curl \
