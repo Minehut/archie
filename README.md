@@ -29,7 +29,6 @@ Use KEDA's [NATS JetStream Scaler](https://keda.sh/docs/latest/scalers/nats-jets
 Using [KEDA PR #3564](https://github.com/kedacore/keda/pull/3564) fix for jetstream clustering 
 
 
-
 ## development
 
 ### running
@@ -55,6 +54,16 @@ Use `make docker-linux-amd64` or `make docker-linux-arm64` to build with local d
 
 ## releasing
 
+### app
+
+#### install
+
+```shell
+brew install goreleaser
+```
+
+#### release
+
 To use `goreleaser` set a new git tag:
 
 ```shell
@@ -65,3 +74,15 @@ git push origin v0.1.0
 Set a `GITHUB_TOKEN` with `repo` access.
 
 Set `release.disabled=false` in `.goreleaser.yaml`, and then run `make release`.
+
+### helm chart
+
+#### install
+
+Use `make helm-install` to add the nexus helm plugin and repo.
+
+#### release
+
+Update the `version` number in `helm/archie/Chart.yaml`.
+
+Use `make helm-release` to publish the helm chart to the repo.
