@@ -35,7 +35,7 @@ build-go-linux-amd64:
 docker-linux-arm64: build-go-linux-arm64
 	@docker build --pull -f Dockerfile.dev --build-arg "arch=arm64/v8"  -t "archie:latest" .
 
-docker-amd64: build-go-linux-amd64
+docker-linux-amd64: build-go-linux-amd64
 	@docker build --pull -f Dockerfile.dev --build-arg "arch=amd64" -t "archie:latest" .
 
 build-goreleaser:
@@ -51,13 +51,13 @@ install-goreleaser: build-goreleaser
 	@mkdir -p $(GOPATH)/bin && cp -f $(PWD)/dist/archie_$(GOOS)_$(GOARCH)/archie $(GOPATH)/bin/archie
 
 release-snapshot:
-	@goreleaser release --snapshot --rm-dist
+	@goreleaser release --rm-dist --snapshot
 
 release-skip-publish:
-	@goreleaser release --skip-publish
+	@goreleaser release --rm-dist --skip-validate --skip-publish
 
 release:
-	@goreleaser release --skip-validate --rm-dist
+	@goreleaser release --rm-dist --skip-validate
 
 helm-install:
 	@helm plugin install --version master https://github.com/sonatype-nexus-community/helm-nexus-push.git || \
