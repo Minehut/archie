@@ -51,8 +51,14 @@ func main() {
 
 	flag.Parse()
 
-	// logger
 	zerolog.TimeFieldFormat = time.RFC3339Nano
+	log.Info().
+		Str("version", archie.Version).
+		Str("releaseTag", archie.ReleaseTag).
+		Str("commit", archie.ShortCommitID).
+		Str("buildDate", archie.BuildDate).
+		Msg("Starting archie")
+
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if *trace {
 		log.Info().Msg("Trace logging enabled")

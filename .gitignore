@@ -2,3 +2,4 @@
 .idea/
 ca.crt
 scripts/
+dist/

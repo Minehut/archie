@@ -1,0 +1,89 @@
+project_name: archie
+
+release:
+  name_template: "Version {{.Version}}"
+  disable: true
+  github:
+    owner: superleaguegaming
+    name: archie
+
+before:
+  hooks:
+  - go mod tidy
+  # - go generate ./...
+
+builds:
+- env:
+  - CGO_ENABLED=0
+
+  goos:
+  - linux
+  - darwin
+  - windows
+
+  goarch:
+  - amd64
+  - arm64
+
+  ldflags:
+  - "-s -w"
+  - "-X archie/archie.Version={{.Version}}"
+  - "-X archie/archie.BuildDate={{.Date}}"
+  - "-X archie/archie.ReleaseTag={{.Tag}}"
+  - "-X archie/archie.CommitID={{.FullCommit}}"
+  - "-X archie/archie.ShortCommitID={{.ShortCommit}}"
+
+archives:
+- replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+
+checksum:
+  algorithm: sha256
+  name_template: 'checksums.txt'
+
+# TODO: add signing
+#signs:
+#- signature: "${artifact}.asc"
+#  cmd: "sh"
+#  args:
+#  - '-c'
+#  - 'gpg --quiet --detach-sign -a ${artifact}'
+#  artifacts: all
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+
+nfpms:
+- id: archie
+  package_name: archie
+  vendor: Super League Gaming
+  homepage: https://github.com/superleaguegaming/archie
+  maintainer: archie@superleague.com
+  description: file copy worker
+  license: GPL v3
+  bindir: /usr/bin
+  formats:
+  - deb
+  - rpm
+  - apk
+  overrides:
+    rpm:
+      replacements:
+        amd64: x86_64
+        arm64: aarch64
+
+
+
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj

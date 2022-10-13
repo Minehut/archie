@@ -18,7 +18,7 @@ func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObj
 		return err, "Failed to GetObject from the source bucket", Nak
 	}
 
-	// get source size, the event's source size was inaccurate sometimes
+	// get source size, the event's object size wasn't good enough
 	srcStat, err := srcObject.Stat()
 	if err != nil {
 		if err.Error() == "The specified key does not exist." {
