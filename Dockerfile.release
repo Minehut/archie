@@ -13,8 +13,8 @@ RUN rm /var/cache/apk/*
 RUN adduser -D app -s /sbin/nologin
 RUN mkdir /app
 
-COPY archie_*.apk /tmp/
-RUN apk add --no-cache --allow-untrusted /tmp/archie_*.apk
+COPY archie-*.apk /tmp/
+RUN apk add --no-cache --allow-untrusted /tmp/archie-*.apk
 
 RUN chown -R app:app /app/
 WORKDIR /app

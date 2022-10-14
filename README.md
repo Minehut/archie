@@ -75,6 +75,10 @@ Set a `GITHUB_TOKEN` with `repo` access.
 
 Set `release.disabled=false` in `.goreleaser.yaml`, and then run `make release`.
 
+Go to the GitHub [Releases](https://github.com/superleaguegaming/archie/releases) page to publish the draft.
+
+Restore `release.disabled=true`
+
 ### helm chart
 
 #### install

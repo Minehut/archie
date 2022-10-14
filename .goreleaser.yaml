@@ -1,11 +1,12 @@
 project_name: archie
 
 release:
-  name_template: "Version {{.Version}}"
+  name_template: "Release {{.Tag}}"
   disable: true
   github:
     owner: superleaguegaming
     name: archie
+  draft: true
 
 before:
   hooks:
@@ -33,17 +34,9 @@ builds:
   - "-X archie/archie.CommitID={{.FullCommit}}"
   - "-X archie/archie.ShortCommitID={{.ShortCommit}}"
 
-archives:
-- replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
-
 checksum:
   algorithm: sha256
-  name_template: 'checksums.txt'
+  name_template: "SHA256SUMS"
 
 # TODO: add signing
 #signs:
@@ -58,14 +51,24 @@ snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
 changelog:
-  sort: asc
+  use: github
   filters:
     exclude:
     - '^docs:'
     - '^test:'
 
+archives:
+- name_template: '{{.ProjectName}}-{{.Tag}}-{{.Os}}-{{.Arch}}{{if .Arm}}{{.Arm}}{{end}}'
+  id: targz-archives
+  wrap_in_directory: true
+  format: tar.gz
+  files:
+  - README.md
+  - LICENSE
+
 nfpms:
 - id: archie
+  file_name_template: '{{.ProjectName}}-{{.Tag}}-{{.Arch}}{{if .Arm}}{{.Arm}}{{end}}'
   package_name: archie
   vendor: Super League Gaming
   homepage: https://github.com/superleaguegaming/archie
