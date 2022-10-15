@@ -21,4 +21,4 @@ WORKDIR /app
 
 ENTRYPOINT ["/sbin/tini", "-g", "--"]
 
-CMD ["su-exec", "app", "./archie"]
+CMD ["su-exec", "app", "archie"]

@@ -87,6 +87,6 @@ Use `make helm-install` to add the nexus helm plugin and repo.
 
 #### release
 
-Update the `version` number in `helm/archie/Chart.yaml`.
+Increment the chart `version` number in `helm/archie/Chart.yaml` and update the `appVersion` to the latest.
 
 Use `make helm-release` to publish the helm chart to the repo.
