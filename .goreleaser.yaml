@@ -2,7 +2,6 @@ project_name: archie
 
 release:
   name_template: "Release {{.Tag}}"
-  disable: true
   github:
     owner: superleaguegaming
     name: archie
@@ -58,8 +57,8 @@ changelog:
     - '^test:'
 
 archives:
-- name_template: '{{.ProjectName}}-{{.Tag}}-{{.Os}}-{{.Arch}}{{if .Arm}}{{.Arm}}{{end}}'
-  id: targz-archives
+- id: targz-archives
+  name_template: '{{.ProjectName}}-{{.Tag}}-{{.Os}}-{{.Arch}}{{if .Arm}}{{.Arm}}{{end}}'
   wrap_in_directory: true
   format: tar.gz
   files:
