@@ -26,33 +26,9 @@ MINIO_NOTIFY_NATS_QUEUE_LIMIT=100000
 
 Use KEDA's [NATS JetStream Scaler](https://keda.sh/docs/latest/scalers/nats-jetstream/)
 
-Using [KEDA PR #3564](https://github.com/kedacore/keda/pull/3564) fix for jetstream clustering 
-
-
 ## development
 
-### running
-
-Run `make run <args>`
-
-### building
-
-#### go releaser
-
-Use `goreleaser` to build binaries, linux packages, and docker containers for all platforms without publishing.
-
-Use `make release-snapshot` to build everything in `./dist/` and create local docker images.
-
-#### go executable
-
-Create a single platform binary in `./dist/` with `make build-go-linux-amd64` or `make build-go-linux-arm64` 
-or `make build-go-local` to auto-detect the host platform.
-
-#### docker images
-
-Use `make docker-linux-amd64` or `make docker-linux-arm64` to build with local docker images.
-
-## releasing
+Check out [DEVELOPER.md](DEVELOPER.md)
 
 ### app
 

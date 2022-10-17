@@ -5,11 +5,9 @@ GOARCH := $(shell go env GOARCH)
 GOOS := $(shell go env GOOS)
 GOPATH := $(shell go env GOPATH)
 
-# If the first argument is "run" pass args
 ifeq (run,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "run"
+  # grab everything after "run"
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
   $(eval $(RUN_ARGS):;@:)
 endif
 
