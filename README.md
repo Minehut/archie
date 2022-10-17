@@ -30,37 +30,9 @@ Use KEDA's [NATS JetStream Scaler](https://keda.sh/docs/latest/scalers/nats-jets
 
 Check out [DEVELOPER.md](DEVELOPER.md)
 
-### app
+## known issues
 
-#### install
-
-```shell
-brew install goreleaser
-```
-
-#### release
-
-To use `goreleaser` set a new git tag:
-
-```shell
-git tag -a v0.1.0 -m "New release"
-git push origin v0.1.0
-```
-
-Set a `GITHUB_TOKEN` with `repo` access.
-
-Run `make release`.
-
-The draft release should be ready to be published on the GitHub [Releases](https://github.com/superleaguegaming/archie/releases) page.
-
-### helm chart
-
-#### install
-
-Use `make helm-install` to add the nexus helm plugin and repo.
-
-#### release
-
-Increment the chart `version` number in `helm/archie/Chart.yaml` and update the `appVersion` to the latest.
-
-Use `make helm-release` to publish the helm chart to the repo.
+* KEDA needed a patch to fix the scaler for using jetstream in a cluster - [PR #3564](https://github.com/kedacore/keda/pull/3564)
+* NATS-Exporter needed to pass the `first_seq` stream info - [PR #190](https://github.com/nats-io/prometheus-nats-exporter/pull/190)
+* MinIO doesn't reconnect to NATS server if it is down for a while - Create PR
+* The NATS JetStream stream's first sequence metric is unstable - Create PR
