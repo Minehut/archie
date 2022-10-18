@@ -26,4 +26,13 @@ MINIO_NOTIFY_NATS_QUEUE_LIMIT=100000
 
 Use KEDA's [NATS JetStream Scaler](https://keda.sh/docs/latest/scalers/nats-jetstream/)
 
-Using [KEDA PR #3564](https://github.com/kedacore/keda/pull/3564) fix for jetstream clustering 
+## development
+
+Check out [DEVELOPER.md](DEVELOPER.md)
+
+## known issues
+
+* KEDA needed a patch to fix the scaler for using jetstream in a cluster - [PR #3564](https://github.com/kedacore/keda/pull/3564)
+* NATS-Exporter needed to pass the `first_seq` stream info - [PR #190](https://github.com/nats-io/prometheus-nats-exporter/pull/190)
+* MinIO doesn't reconnect to NATS server if it is down for a while - Create PR
+* The NATS JetStream stream's first sequence metric is unstable - Create PR
