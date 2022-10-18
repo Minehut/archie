@@ -1,0 +1,42 @@
+{{- if .Values.keda.create -}}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "archie.fullname" . }}-jetstream
+  {{- if .Values.keda.pausedReplicas.enabled }}
+  annotations:
+    autoscaling.keda.sh/paused-replicas: "{{ .Values.keda.pausedReplicas.replicas }}"
+  {{- end }}
+spec:
+  scaleTargetRef:
+    name: {{ include "archie.fullname" . }}
+
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  minReplicaCount: {{ .Values.keda.minReplicaCount }}
+  maxReplicaCount: {{ .Values.keda.maxReplicaCount }}
+
+  fallback:
+    failureThreshold: {{ .Values.keda.fallback.failureThreshold }}
+    replicas: {{ .Values.keda.fallback.replicas }}
+
+  advanced:
+    horizontalPodAutoscalerConfig:
+      name: keda-hpa-{{ include "archie.fullname" . }}-jetstream
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.keda.horizontalPodAutoscalerConfig.behavior.scaleDown.stabilizationWindowSeconds }}
+          policies:
+          - type: Percent
+            value: {{ .Values.keda.horizontalPodAutoscalerConfig.behavior.scaleDown.percent }}
+            periodSeconds: {{ .Values.keda.horizontalPodAutoscalerConfig.behavior.scaleDown.periodSeconds }}
+
+  triggers:
+  - type: nats-jetstream
+    metadata:
+      natsServerMonitoringEndpoint: {{ .Values.jetstream.metricsURL }}
+      account: "$G"
+      stream: {{ .Values.jetstream.stream }}
+      consumer: {{ .Values.jetstream.durableConsumer }}
+      lagThreshold: "{{ .Values.keda.trigger.lagThreshold }}"
+{{- end }}

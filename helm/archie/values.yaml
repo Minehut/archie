@@ -1,0 +1,138 @@
+# Default values for archie.
+replicaCount: 1
+
+image:
+  repository: nothing.public.yet
+  pullPolicy: IfNotPresent
+#  tag: latest
+#  args: []
+
+archie:
+  debug: false
+  shutdownWait: 30 # seconds
+#  msgTimeout: 30m
+  healthCheck:
+    enabled: true
+    port: 8080
+  metrics:
+    port: 9999
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  rollingUpdate:
+    maxUnavailable: 25%
+    maxSurge: 10%
+  service:
+    type: ClusterIP
+  serviceMonitor:
+    enabled: false
+    additionalLabels: {}
+  prometheusRules:
+    enabled: false
+    additionalLabels: {}
+    dashboard: https://www.grafana.com/d/0000000/archie
+    rules:
+      archieMessagesProcessedFailedThreshold: 30
+      minioNotifyQueueFilesThreshold: 10000
+      natsMessagesAckPendingThreshold: 500
+      natsMessagesDeliveredLowThreshold: 30
+      natsMessagesPendingThreshold: 20000
+      natsMessagesRedeliveredPercentageThreshold: 2
+  skipLifecycleExpired: false
+  # disable the deployment
+  deployment:
+    create: true
+
+jetstream:
+  url: nats://localhost:4222
+  metricsURL: localhost:8222
+  provisioningDisabled: false
+#  stream: archie-stream
+#  subject: minio-archie-events
+#  maxAckPending: 1000
+#  durableConsumer: durable
+#  streamMaxAge: 72h
+#  streamReplicas: 1
+#  streamMaxSize: -1 # MB
+#  streamRepublishEnabled: false
+#  batchSize: 1
+#  username:
+#  password:
+#  rootCA:
+#    fileName: ca.crt
+#    secretName: nats-ca
+#  tls:
+#    allowNonTLS: false
+#    secret:
+#      name: nats-client-tls
+#    ca: ca.crt
+#    cert: tls.crt
+#    key: tls.key
+
+keda:
+  create: false
+  pollingInterval: 30
+  # only used for scaling to zero
+  cooldownPeriod: 300
+  fallback:
+    failureThreshold: 3
+    replicas: 1
+  horizontalPodAutoscalerConfig:
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        percent: 100
+        periodSeconds: 15
+  # can't really set min replicas to 0 as keda does not include
+  # messages waiting for ack in the scaling metric
+  minReplicaCount: 1
+  maxReplicaCount: 100
+  trigger:
+    # logThreshold * messages in queue = pods running
+    lagThreshold: 10
+  # pause scaling at N replicas
+  pausedReplicas:
+    enabled: false
+    replicas: 0
+
+source:
+  name: src
+  bucket: src-test
+  endpoint: localhost
+  useSSL: true
+#  accessKey:
+#  secretAccessKey:
+
+destination:
+  name: dest
+  bucket: dest-test
+  endpoint: localhost
+  useSSL: true
+  threads: 4
+  partSize: 16 # MiB
+#  accessKey:
+#  secretAccessKey:
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,91 @@
+{{- if .Values.archie.prometheusRules.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "archie.labels" . | nindent 4 }}
+    {{- with .Values.archie.prometheusRules.additionalLabels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+spec:
+  groups:
+  - name: archie.rules
+    rules:
+    - alert: ArchieMessagesProcessedFailed
+      expr: |
+        sum(increase(archie_messages_processed_count{state!~"(success|skipped)"}[15m])) by (state, eventType) >
+          {{ .Values.archie.prometheusRules.rules.archieMessagesProcessedFailedThreshold }}
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        dashboard: {{ .Values.archie.prometheusRules.dashboard }}
+        description: {{`Archie {{$labels.state}} {{ $value }} messages for {{$labels.eventType}}`}}
+        summary: The amount of of failed messages is too high
+
+  - name: minio.rules
+    rules:
+    - alert: ArchieMinioNotifyQueueFilesTooHigh
+      expr: sum(minio_notify_nats_queue_count) by (job, directory) > {{ .Values.archie.prometheusRules.rules.minioNotifyQueueFilesThreshold }}
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        dashboard: {{ .Values.archie.prometheusRules.dashboard }}
+        description: {{`MinIO folder "{{$labels.directory}}" has {{ $value }} queued files`}}
+        summary: The amount of queued notification files is too high
+
+  - name: nats.rules
+    rules:
+    - alert: ArchieNatsConsumerPendingMessagesTooHigh
+      expr: |
+        nats_consumer_num_pending{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"} >
+          {{ .Values.archie.prometheusRules.rules.natsMessagesPendingThreshold }}
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        dashboard: {{ .Values.archie.prometheusRules.dashboard }}
+        description: {{`Consumer "{{$labels.consumer_name}}" has {{ $value }} pending messages`}}
+        summary: The amount of pending messages is too high
+
+    - alert: ArchieNatsConsumerAckPendingMessagesTooHigh
+      expr: |
+        nats_consumer_num_ack_pending{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"} >
+          {{ .Values.archie.prometheusRules.rules.natsMessagesAckPendingThreshold }}
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        dashboard: {{ .Values.archie.prometheusRules.dashboard }}
+        description: {{`Consumer "{{$labels.consumer_name}}" has {{ $value }} ack pending messages`}}
+        summary: The amount of ack pending messages is too high
+
+    - alert: ArchieNatsConsumerRedeliveredMessagePercentageTooHigh
+      expr: |
+        rate(nats_consumer_num_redelivered{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"}[1m]) /
+          rate(nats_consumer_delivered_stream_seq{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"}[1m]) >
+          {{ .Values.archie.prometheusRules.rules.natsMessagesRedeliveredPercentageThreshold }}
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        dashboard: {{ .Values.archie.prometheusRules.dashboard }}
+        description: {{`Consumer "{{$labels.consumer_name}}" gets {{ $value }} of its messages redelivered`}}
+        summary: The percentage of redelivered messages is too high
+
+    - alert: ArchieNatsConsumerDeliveredMessagesTooLow
+      expr: |
+        sum(increase(nats_consumer_delivered_consumer_seq{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"}[1m]))
+          by (account, cluster, consumer_name, is_consumer_leader, is_stream_leader, stream_name) <
+          {{ .Values.archie.prometheusRules.rules.natsMessagesDeliveredLowThreshold }}
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        dashboard: {{ .Values.archie.prometheusRules.dashboard }}
+        description: {{`Consumer "{{$labels.consumer_name}}" only delivered {{ $value }} messages`}}
+        summary: The amount of of delivered messages is too low
+
+{{- end }}

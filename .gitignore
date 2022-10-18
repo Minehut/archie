@@ -3,3 +3,4 @@
 ca.crt
 scripts/
 dist/
+*.tgz
