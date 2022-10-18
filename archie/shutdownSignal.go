@@ -11,7 +11,13 @@ import (
 	"time"
 )
 
-func (a *Archiver) WaitForSignal(shutdownWait string, baseCancel context.CancelFunc, msgCancel context.CancelFunc, healthCheckSrv *http.Server, metricsSrv *http.Server) {
+func (a *Archiver) WaitForSignal(
+	shutdownWait string,
+	baseCancel context.CancelFunc,
+	msgCancel context.CancelFunc,
+	healthCheckSrv *http.Server,
+	metricsSrv *http.Server,
+) {
 	shutdownWaitDuration, err := time.ParseDuration(shutdownWait)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to parse shutdown-wait duration argument")
@@ -50,7 +56,14 @@ func (a *Archiver) WaitForSignal(shutdownWait string, baseCancel context.CancelF
 	}
 }
 
-func (a *Archiver) shutdown(sig os.Signal, shutdownWaitDuration time.Duration, baseCancel context.CancelFunc, msgCancel context.CancelFunc, healthCheckSrv *http.Server, metricsSrv *http.Server) {
+func (a *Archiver) shutdown(
+	sig os.Signal,
+	shutdownWaitDuration time.Duration,
+	baseCancel context.CancelFunc,
+	msgCancel context.CancelFunc,
+	healthCheckSrv *http.Server,
+	metricsSrv *http.Server,
+) {
 	log.Info().Msgf("Received %s signal, starting %s shutdown wait", sig, shutdownWaitDuration)
 
 	// stop fetching new records

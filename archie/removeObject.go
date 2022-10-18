@@ -9,7 +9,13 @@ import (
 	"time"
 )
 
-func (a *Archiver) removeObject(ctx context.Context, mLog zerolog.Logger, eventObjKey string, msg *nats.Msg, record event.Record) (error, string, AckType) {
+func (a *Archiver) removeObject(
+	ctx context.Context,
+	mLog zerolog.Logger,
+	eventObjKey string,
+	msg *nats.Msg,
+	record event.Record,
+) (error, string, AckType) {
 	metadata, _ := msg.Metadata()
 
 	if a.SkipLifecycleExpired && record.Source.Host == "Internal: [ILM-EXPIRY]" {

@@ -14,7 +14,13 @@ type Params struct {
 	PartSize uint64
 }
 
-func MinIO(ctx context.Context, name, bucket, endpoint, accessKey, secretAccessKey *string, useSSL *bool, p Params, trace *bool) (*minio.Client, context.CancelFunc) {
+func MinIO(
+	ctx context.Context,
+	name, bucket, endpoint, accessKey, secretAccessKey *string,
+	useSSL *bool,
+	p Params,
+	trace *bool,
+) (*minio.Client, context.CancelFunc) {
 
 	//minio.MaxRetry = 0
 

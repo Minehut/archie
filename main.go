@@ -33,7 +33,8 @@ func main() {
 	jetStreamStreamMaxAge := flag.String("jetstream-stream-max-age", LookupEnvOrString("JETSTREAM_STREAM_MAX_AGE", "72h"), "max duration to persist JetStream messages in the stream")
 	jetStreamStreamMaxSize := flag.Int64("jetstream-stream-max", LookupEnvOrInt64("JETSTREAM_STREAM_MAX_SIZE", -1), "max size of stream in megabytes")
 	jetStreamStreamReplicas := flag.Int("jetstream-stream-replicas", LookupEnvOrInt("JETSTREAM_STREAM_REPLICAS", 1), "number of replicas for the stream data")
-	jetreamStreamRePublishEnabled := flag.Bool("jetstream-stream-republish-enabled", LookupEnvOrBool("JETSTREAM_STREAM_REPUBLISH_ENABLED", false), "re-publish messages from the main stream to a separate archive stream")
+	jetStreamStreamRePublishEnabled := flag.Bool("jetstream-stream-republish-enabled", LookupEnvOrBool("JETSTREAM_STREAM_REPUBLISH_ENABLED", false), "re-publish messages from the main stream to a separate archive stream")
+	jetStreamProvisioningDisabled := flag.Bool("jetstream-provisioning-disabled", LookupEnvOrBool("JETSTREAM_PROVISIONING_DISABLED", false), "disable the creation and configuration of the stream and consumer")
 	jetStreamSubject := flag.String("jetstream-subject", LookupEnvOrString("JETSTREAM_SUBJECT", "minioevents"), "nats jetstream subject to subscribe to")
 	jetStreamURL := flag.String("jetstream-url", LookupEnvOrString("JETSTREAM_URL", "nats://localhost:4222"), "jetstream client url")
 	jetStreamUsername := flag.String("jetstream-username", LookupEnvOrString("JETSTREAM_USERNAME", ""), "jetstream client username")
@@ -149,7 +150,8 @@ func main() {
 		*jetStreamMaxAckPending,
 		*jetStreamStreamMaxSize,
 		*msgTimeout,
-		*jetreamStreamRePublishEnabled,
+		*jetStreamStreamRePublishEnabled,
+		*jetStreamProvisioningDisabled,
 	)
 
 	// health check server
