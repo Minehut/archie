@@ -76,9 +76,11 @@ keda:
   # only used for scaling to zero
   cooldownPeriod: 300
   fallback:
+    enabled: false
     failureThreshold: 3
     replicas: 1
   horizontalPodAutoscalerConfig:
+    enabled: false
     behavior:
       scaleDown:
         stabilizationWindowSeconds: 300
@@ -87,7 +89,7 @@ keda:
   # can't really set min replicas to 0 as keda does not include
   # messages waiting for ack in the scaling metric
   minReplicaCount: 1
-  maxReplicaCount: 100
+  maxReplicaCount: 20
   trigger:
     # logThreshold * messages in queue = pods running
     lagThreshold: 10
