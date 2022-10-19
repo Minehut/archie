@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 	"time"
@@ -11,8 +10,8 @@ func JetStream(
 	url, subject, stream, durableConsumer, streamMaxAgeDur, rootCA, username, password string,
 	streamReplicas, maxAckPending int,
 	streamMaxSize int64,
-	msgTimeout string,
-	jetStreamStreamRePublishEnabled, jetStreamProvisioningDisabled bool,
+	msgTimeout, streamRetention, streamRepublishSubject string,
+	provisioningDisabled bool,
 ) (*nats.Subscription, *nats.Conn) {
 	var connectOptions []nats.Option
 	if rootCA != "" {
@@ -34,15 +33,18 @@ func JetStream(
 		log.Fatal().Err(err).Msg("Failed to initialize JetStream context")
 	}
 
-	// TODO: output some information about the JetStream server
+	accountInfo, err := jetStream.AccountInfo()
+	log.Info().Uint64("memory", accountInfo.Tier.Memory).
+		Uint64("storage", accountInfo.Tier.Store).
+		Int("streams", accountInfo.Tier.Streams).
+		Int("consumers", accountInfo.Tier.Consumers).
+		Msg("JetStream account info")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to get JetStream account info")
+	}
 
-	if !jetStreamProvisioningDisabled {
+	if !provisioningDisabled {
 		// build the stream
-		streamMaxAge, err := time.ParseDuration(streamMaxAgeDur)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to parse jetstream-max-age duration argument")
-		}
-
 		streamMaxBytes := int64(-1)
 		if streamMaxSize != -1 {
 			streamMaxBytes = 1_000_000 * streamMaxSize // Megabytes
@@ -51,34 +53,27 @@ func JetStream(
 		streamConfig := &nats.StreamConfig{
 			Name:      stream,
 			Subjects:  []string{subject},
-			MaxAge:    streamMaxAge,
-			MaxBytes:  -1,             // TODO: fix this
-			Replicas:  streamReplicas, // TODO: test this
+			MaxBytes:  streamMaxBytes,
+			Replicas:  streamReplicas,
 			Retention: nats.LimitsPolicy,
 		}
 
-		if jetStreamStreamRePublishEnabled {
-			// set the main stream to delete msgs on ACK
-			// then use the archive stream as a backup
-			streamConfig.Retention = nats.InterestPolicy
-
-			// setup the msg forwarding to the archive stream
-			streamConfig.RePublish = &nats.RePublish{Source: subject, Destination: fmt.Sprintf("%s-archive", subject)}
-
-			// build an archive stream that will not be consumed
-			archiveStreamConfig := &nats.StreamConfig{
-				Name:      fmt.Sprintf("%s-archive", stream),
-				Subjects:  []string{fmt.Sprintf("%s-archive", subject)},
-				MaxAge:    streamMaxAge,
-				MaxBytes:  streamMaxBytes, // TODO: test this
-				Replicas:  streamReplicas, // TODO: test this
-				Retention: nats.LimitsPolicy,
+		if streamMaxAgeDur != "" {
+			streamMaxAge, err := time.ParseDuration(streamMaxAgeDur)
+			if err != nil {
+				log.Fatal().Err(err).Msg("Failed to parse jetstream-max-age duration argument")
 			}
+			streamConfig.MaxAge = streamMaxAge
+		}
 
-			archiveStreamInfo := createOrUpdateStream(jetStream, fmt.Sprintf("%s-archive", stream), archiveStreamConfig)
+		if streamRetention == "interest" {
+			streamConfig.Retention = nats.InterestPolicy
+		} else if streamRetention == "work_queue" {
+			streamConfig.Retention = nats.WorkQueuePolicy
+		}
 
-			log.Info().Msgf("JetStream archive stream %s configured with %d replicas and limited by %s max age, and %d max bytes",
-				archiveStreamInfo.Config.Name, archiveStreamInfo.Config.Replicas, archiveStreamInfo.Config.MaxAge, archiveStreamInfo.Config.MaxBytes)
+		if streamRepublishSubject != "" {
+			streamConfig.RePublish = &nats.RePublish{Source: subject, Destination: streamRepublishSubject}
 		}
 
 		streamInfo := createOrUpdateStream(jetStream, stream, streamConfig)
@@ -93,16 +88,14 @@ func JetStream(
 		}
 
 		desiredConsumerConfig := &nats.ConsumerConfig{
-			//MaxWaiting:    jetStreamMaxWaiting,    // must match fetch() batch parameter
-			//MaxRequestExpires: 60 * time.Second,   // limit max fetch() expires    (pull)
-			//MaxRequestBatch:   10,                 // limit max fetch() batch size (pull)
-			AckPolicy:     nats.AckExplicitPolicy, // always ack (default)
-			AckWait:       ackWait,                // wait before retry
-			DeliverPolicy: nats.DeliverNewPolicy,  // deliver since consumer creation
-			Durable:       durableConsumer,        // consumer name
-			FilterSubject: subject,                // nats subject for stream
-			MaxAckPending: maxAckPending,          // stop offering msgs once we're waiting on too many acks
-			MaxDeliver:    -1,                     // try to redeliver forever
+			AckPolicy:       nats.AckExplicitPolicy, // always ack (default)
+			AckWait:         ackWait,                // wait before retry
+			DeliverPolicy:   nats.DeliverNewPolicy,  // deliver since consumer creation
+			Durable:         durableConsumer,        // consumer name
+			FilterSubject:   subject,                // nats subject for stream
+			MaxAckPending:   maxAckPending,          // stop offering msgs once we're waiting on too many acks
+			MaxDeliver:      -1,                     // try to redeliver forever
+			SampleFrequency: "100",                  // deliver all messages as a percentage, required by tf module
 		}
 
 		consumerInfo, err := jetStream.ConsumerInfo(stream, durableConsumer)

@@ -49,13 +49,14 @@ jetstream:
   metricsURL: localhost:8222
   provisioningDisabled: false
 #  stream: archie-stream
+#  streamRetention: "interest" # or "limits" or "work_queue"
 #  subject: minio-archie-events
 #  maxAckPending: 1000
 #  durableConsumer: durable
 #  streamMaxAge: 72h
 #  streamReplicas: 1
 #  streamMaxSize: -1 # MB
-#  streamRepublishEnabled: false
+#  streamRepublishSubject: minio-archie-events-archive
 #  batchSize: 1
 #  username:
 #  password:

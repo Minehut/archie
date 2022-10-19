@@ -16,13 +16,13 @@ spec:
   minReplicaCount: {{ .Values.keda.minReplicaCount }}
   maxReplicaCount: {{ .Values.keda.maxReplicaCount }}
 
-  {{- if .Values.keda.fallback.enabled -}}
+  {{- if .Values.keda.fallback.enabled }}
   fallback:
     failureThreshold: {{ .Values.keda.fallback.failureThreshold }}
     replicas: {{ .Values.keda.fallback.replicas }}
   {{- end }}
 
-  {{- if .Values.keda.horizontalPodAutoscalerConfig.enabled -}}
+  {{- if .Values.keda.horizontalPodAutoscalerConfig.enabled }}
   advanced:
     horizontalPodAutoscalerConfig:
       name: keda-hpa-{{ include "archie.fullname" . }}-jetstream
