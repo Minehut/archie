@@ -1,0 +1,92 @@
+{{- if .Values.archie.deployment.create -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "archie.fullname" . }}
+  labels:
+    {{- include "archie.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "archie.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+        {{- with .Values.archie.rollingUpdate }}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "archie.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "archie.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          args:
+          {{- with .Values.image.args }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          envFrom:
+          - secretRef:
+              name: {{ include "archie.fullname" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          - name: metrics
+            containerPort: 9999
+            protocol: TCP
+          {{- if .Values.archie.healthCheck.enabled }}
+          - name: http
+            containerPort: {{ .Values.archie.healthCheck.port }}
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+          {{- end }}
+          volumeMounts:
+          {{- with .Values.jetstream.rootCA }}
+            - name: {{ .secretName }}-clients-volume
+              mountPath: /etc/nats-cert/{{ .secretName }}
+              subPath: {{ .fileName }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.archie.resources | nindent 12 }}
+      terminationGracePeriodSeconds: {{ include "archie.terminationGracePeriodSeconds" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- with .Values.jetstream.rootCA }}
+      - name: {{ .secretName }}-clients-volume
+        secret:
+          secretName: {{ .secretName }}
+      {{- end }}
+{{- end }}

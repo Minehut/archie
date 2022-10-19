@@ -1,0 +1,30 @@
+{{- if and .Values.archie.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "archie.fullname" . }}
+  {{- with .Values.archie.serviceMonitor.namespace }}
+  namespace: {{ . }}
+  {{- end }}
+  labels:
+    {{- include "archie.labels" . | nindent 4 }}
+    {{- with .Values.archie.serviceMonitor.additionalLabels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+  - port: metrics
+    honorLabels: true
+      {{- with .Values.archie.serviceMonitor.interval }}
+    interval: {{ . }}
+      {{- end }}
+      {{- with .Values.archie.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ . }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "archie.selectorLabels" . | nindent 6 }}
+{{- end }}

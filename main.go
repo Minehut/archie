@@ -25,17 +25,18 @@ func main() {
 	healthCheckEnabled := flag.Bool("health-check-enabled", LookupEnvOrBool("HEALTH_CHECK_ENABLED", true), "enable health-check server for k9s")
 	healthCheckPort := flag.Int("health-check-port", LookupEnvOrInt("HEALTH_CHECK_PORT", 8080), "health check tcp port number")
 	jetStreamBatchSize := flag.Int("jetstream-batch-size", LookupEnvOrInt("JETSTREAM_BATCH_SIZE", 1), "number of JetStream messages to pull per batch")
-	jetStreamDurableConsumer := flag.String("jetstream-durable-consumer", LookupEnvOrString("JETSTREAM_DURABLE_CONSUMER", "durable"), "name of the durable stream consumer (queue group)")
+	jetStreamDurableConsumer := flag.String("jetstream-durable-consumer", LookupEnvOrString("JETSTREAM_DURABLE_CONSUMER", "archie-consumer"), "name of the durable stream consumer (queue group)")
 	jetStreamMaxAckPending := flag.Int("jetstream-max-ack-pending", LookupEnvOrInt("JETSTREAM_MAX_ACK_PENDING", 1_000), "jetstream server will stop offering msgs for processing once it is waiting on too many un-ack'd msgs")
 	jetStreamPassword := flag.String("jetstream-password", LookupEnvOrString("JETSTREAM_PASSWORD", ""), "jetstream client password")
 	jetStreamRootCA := flag.String("jetstream-root-ca", LookupEnvOrString("JETSTREAM_ROOT_CA", ""), "path to the root CA cert file")
 	jetStreamStream := flag.String("jetstream-stream", LookupEnvOrString("JETSTREAM_STREAM", "archie-stream"), "jetstream stream name")
-	jetStreamStreamMaxAge := flag.String("jetstream-stream-max-age", LookupEnvOrString("JETSTREAM_STREAM_MAX_AGE", "72h"), "max duration to persist JetStream messages in the stream")
-	jetStreamStreamMaxSize := flag.Int64("jetstream-stream-max", LookupEnvOrInt64("JETSTREAM_STREAM_MAX_SIZE", -1), "max size of stream in megabytes")
+	jetStreamStreamMaxAge := flag.String("jetstream-stream-max-age", LookupEnvOrString("JETSTREAM_STREAM_MAX_AGE", ""), "max duration to persist JetStream messages in the stream")
+	jetStreamStreamMaxSize := flag.Int64("jetstream-stream-max-size", LookupEnvOrInt64("JETSTREAM_STREAM_MAX_SIZE", -1), "max size of stream in megabytes")
 	jetStreamStreamReplicas := flag.Int("jetstream-stream-replicas", LookupEnvOrInt("JETSTREAM_STREAM_REPLICAS", 1), "number of replicas for the stream data")
-	jetStreamStreamRePublishEnabled := flag.Bool("jetstream-stream-republish-enabled", LookupEnvOrBool("JETSTREAM_STREAM_REPUBLISH_ENABLED", false), "re-publish messages from the main stream to a separate archive stream")
+	jetStreamStreamRetention := flag.String("jetstream-stream-retention", LookupEnvOrString("JETSTREAM_STREAM_RETENTION", "limits"), "stream retention policy: 'limits', 'interest', or 'work_queue'")
+	jetStreamStreamRepublishSubject := flag.String("jetstream-stream-republish-subject", LookupEnvOrString("JETSTREAM_STREAM_REPUBLISH_SUBJECT", ""), "re-publish messages from the main subject to a separate subject")
 	jetStreamProvisioningDisabled := flag.Bool("jetstream-provisioning-disabled", LookupEnvOrBool("JETSTREAM_PROVISIONING_DISABLED", false), "disable the creation and configuration of the stream and consumer")
-	jetStreamSubject := flag.String("jetstream-subject", LookupEnvOrString("JETSTREAM_SUBJECT", "minioevents"), "nats jetstream subject to subscribe to")
+	jetStreamSubject := flag.String("jetstream-subject", LookupEnvOrString("JETSTREAM_SUBJECT", "archie-minio-events"), "nats jetstream subject to subscribe to")
 	jetStreamURL := flag.String("jetstream-url", LookupEnvOrString("JETSTREAM_URL", "nats://localhost:4222"), "jetstream client url")
 	jetStreamUsername := flag.String("jetstream-username", LookupEnvOrString("JETSTREAM_USERNAME", ""), "jetstream client username")
 	metricsPort := flag.Int("metrics-port", LookupEnvOrInt("METRICS_PORT", 9999), "metrics tcp port number")
@@ -150,7 +151,8 @@ func main() {
 		*jetStreamMaxAckPending,
 		*jetStreamStreamMaxSize,
 		*msgTimeout,
-		*jetStreamStreamRePublishEnabled,
+		*jetStreamStreamRetention,
+		*jetStreamStreamRepublishSubject,
 		*jetStreamProvisioningDisabled,
 	)
 
