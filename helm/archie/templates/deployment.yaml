@@ -41,9 +41,6 @@ spec:
           {{- with .Values.image.args }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          envFrom:
-          - secretRef:
-              name: {{ include "archie.fullname" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
           - name: metrics
@@ -63,10 +60,14 @@ spec:
               port: http
           {{- end }}
           volumeMounts:
+          - name: {{ include "archie.fullname" . }}-config-volume
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
           {{- with .Values.jetstream.rootCA }}
-            - name: {{ .secretName }}-clients-volume
-              mountPath: /etc/nats-cert/{{ .secretName }}
-              subPath: {{ .fileName }}
+          - name: {{ .secretName }}-clients-volume
+            mountPath: /etc/nats-cert/{{ .secretName }}
+            subPath: {{ .fileName }}
           {{- end }}
           resources:
             {{- toYaml .Values.archie.resources | nindent 12 }}
@@ -84,6 +85,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      - name: {{ include "archie.fullname" . }}-config-volume
+        secret:
+          secretName: {{ include "archie.fullname" . }}
+          optional: false
       {{- with .Values.jetstream.rootCA }}
       - name: {{ .secretName }}-clients-volume
         secret:

@@ -25,7 +25,7 @@ type readinessCheck struct {
 type livenessCheck struct{}
 
 func (a *Archiver) StartHealthCheckServer(healthCheckPort int, jetStreamConn *nats.Conn) *http.Server {
-	if !a.HealthCheckEnabled {
+	if a.HealthCheckDisabled {
 		return nil
 	}
 

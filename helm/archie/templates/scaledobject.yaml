@@ -40,7 +40,7 @@ spec:
     metadata:
       natsServerMonitoringEndpoint: {{ .Values.jetstream.metricsURL }}
       account: "$G"
-      stream: {{ .Values.jetstream.stream }}
-      consumer: {{ .Values.jetstream.durableConsumer }}
+      stream: {{ .Values.jetstream.stream.name }}
+      consumer: {{ .Values.jetstream.consumer.name }}
       lagThreshold: "{{ .Values.keda.trigger.lagThreshold }}"
 {{- end }}

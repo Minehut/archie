@@ -27,7 +27,22 @@ func (a *Archiver) removeObject(
 		a.observeMessagesDeleteNumDeliveredMetric(float64(metadata.NumDelivered))
 		a.observeMessagesDeleteQueueDurationMetric(time.Now().Sub(metadata.Timestamp).Seconds())
 
-		return nil, "", SkipAck
+		return nil, "ILM_EXPIRY", SkipAck
+	}
+
+	for _, excludedPathRegexp := range a.ExcludePaths.RemoveObject {
+		if excludedPathRegexp.MatchString(eventObjKey) {
+			mLog.Info().
+				Uint64("numDelivered", metadata.NumDelivered).
+				Str("queueDuration", time.Now().Sub(metadata.Timestamp).String()).
+				Str("pattern", excludedPathRegexp.String()).
+				Msg("Excluded path match, remove event skipped")
+
+			a.observeMessagesDeleteNumDeliveredMetric(float64(metadata.NumDelivered))
+			a.observeMessagesDeleteQueueDurationMetric(time.Now().Sub(metadata.Timestamp).Seconds())
+
+			return nil, "EXCLUDED_PATH", SkipAck
+		}
 	}
 
 	start := time.Now()

@@ -2,6 +2,7 @@ package archie
 
 import (
 	"github.com/minio/minio-go/v7"
+	"go.arsenm.dev/pcre"
 	"sync"
 )
 
@@ -12,7 +13,7 @@ type Archiver struct {
 	DestPartSize         uint64
 	DestThreads          uint
 	FetchDone            chan string
-	HealthCheckEnabled   bool
+	HealthCheckDisabled  bool
 	IsOffline            bool
 	MsgTimeout           string
 	SkipLifecycleExpired bool
@@ -20,6 +21,10 @@ type Archiver struct {
 	SrcClient            *minio.Client
 	SrcName              string
 	WaitGroup            *sync.WaitGroup
+	ExcludePaths         struct {
+		CopyObject   []*pcre.Regexp
+		RemoveObject []*pcre.Regexp
+	}
 }
 
 type AckType int

@@ -8,9 +8,19 @@ image:
 #  args: []
 
 archie:
-  debug: false
+  logLevel: info # or "debug" or "trace"
+  msgTimeout: 30m
   shutdownWait: 30 # seconds
-#  msgTimeout: 30m
+  skipLifecycleExpired: false
+  # pcre regex matching
+  #excludePaths:
+  #  copyObject:
+  #  - '.*'
+  #  removeObject:
+  #  - '.*'
+  # disable the deployment
+  deployment:
+    create: true
   healthCheck:
     enabled: true
     port: 8080
@@ -39,27 +49,25 @@ archie:
       natsMessagesDeliveredLowThreshold: 30
       natsMessagesPendingThreshold: 20000
       natsMessagesRedeliveredPercentageThreshold: 2
-  skipLifecycleExpired: false
-  # disable the deployment
-  deployment:
-    create: true
 
 jetstream:
   url: nats://localhost:4222
   metricsURL: localhost:8222
   provisioningDisabled: false
-#  stream: archie-stream
-#  streamRetention: "interest" # or "limits" or "work_queue"
 #  subject: minio-archie-events
-#  maxAckPending: 1000
-#  durableConsumer: durable
-#  streamMaxAge: 72h
-#  streamReplicas: 1
-#  streamMaxSize: -1 # MB
-#  streamRepublishSubject: minio-archie-events-archive
 #  batchSize: 1
 #  username:
 #  password:
+#  stream:
+#    name: archie-stream
+#    retention: interest # or "limits" or "work_queue"
+#    maxAge: 72h
+#    replicas: 1
+#    maxSize: -1 # MB
+#    republishSubject: minio-archie-events-archive
+#  consumer:
+#    name: durable
+#    maxAckPending: 1000
 #  rootCA:
 #    fileName: ca.crt
 #    secretName: nats-ca
@@ -100,22 +108,22 @@ keda:
     replicas: 0
 
 source:
-  name: src
+  name: src # just a label
   bucket: src-test
   endpoint: localhost
   useSSL: true
 #  accessKey:
-#  secretAccessKey:
+#  secretKey:
 
 destination:
-  name: dest
+  name: dest # just a label
   bucket: dest-test
   endpoint: localhost
   useSSL: true
   threads: 4
   partSize: 16 # MiB
 #  accessKey:
-#  secretAccessKey:
+#  secretKey:
 
 imagePullSecrets: []
 nameOverride: ""

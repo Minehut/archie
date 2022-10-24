@@ -95,21 +95,19 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 			Msg("Message received")
 
 		var ack AckType
-		var s3ErrMsg, s3ErrCode string
+		var s3ErrMsg, s3ErrCode, execContext string
 
 		// message type router
 		switch eventType {
 		case "s3:ObjectCreated":
-			var errContext string
-			err, errContext, ack = a.copyObject(ctx, mLog, eventObjKey, msg)
+			err, execContext, ack = a.copyObject(ctx, mLog, eventObjKey, msg)
 			if err != nil {
-				s3ErrMsg, s3ErrCode = logS3Error(err, errContext, &mLog)
+				s3ErrMsg, s3ErrCode = logS3Error(err, execContext, &mLog)
 			}
 		case "s3:ObjectRemoved":
-			var errContext string
-			err, errContext, ack = a.removeObject(ctx, mLog, eventObjKey, msg, eventRecord)
+			err, execContext, ack = a.removeObject(ctx, mLog, eventObjKey, msg, eventRecord)
 			if err != nil {
-				s3ErrMsg, s3ErrCode = logS3Error(err, errContext, &mLog)
+				s3ErrMsg, s3ErrCode = logS3Error(err, execContext, &mLog)
 			}
 		default:
 			mLog.Error().Msgf("Unable to process the %s event type", event.EventName, eventType)
@@ -131,7 +129,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 				// logging already happened
 				continue
 			}
-			a.cleanupAndCountMessagesProcessedMetric("skipped", "", "", event.EventName, eventType)
+			a.cleanupAndCountMessagesProcessedMetric("skipped", "", execContext, event.EventName, eventType)
 		case Nak:
 			sendNakSignal(msg, &mLog)
 			a.cleanupAndCountMessagesProcessedMetric("failed", s3ErrMsg, s3ErrCode, event.EventName, eventType)

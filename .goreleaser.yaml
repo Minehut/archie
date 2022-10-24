@@ -19,7 +19,7 @@ builds:
   goos:
   - linux
   - darwin
-  - windows
+#  - windows
 
   goarch:
   - amd64

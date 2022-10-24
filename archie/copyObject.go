@@ -11,6 +11,21 @@ import (
 func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObjKey string, msg *nats.Msg) (error, string, AckType) {
 	metadata, _ := msg.Metadata()
 
+	for _, excludedPathRegexp := range a.ExcludePaths.CopyObject {
+		if excludedPathRegexp.MatchString(eventObjKey) {
+			mLog.Info().
+				Uint64("numDelivered", metadata.NumDelivered).
+				Str("queueDuration", time.Now().Sub(metadata.Timestamp).String()).
+				Str("pattern", excludedPathRegexp.String()).
+				Msg("Excluded path match, copy event skipped")
+
+			a.observeMessagesTransferNumDeliveredMetric(float64(metadata.NumDelivered))
+			a.observeMessagesTransferQueueDurationMetric(time.Now().Sub(metadata.Timestamp).Seconds())
+
+			return nil, "EXCLUDED_PATH", SkipAck
+		}
+	}
+
 	// get src object
 	start := time.Now()
 	srcObject, err := a.SrcClient.GetObject(ctx, a.SrcBucket, eventObjKey, minio.GetObjectOptions{})
