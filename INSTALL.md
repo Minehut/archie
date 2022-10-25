@@ -12,18 +12,20 @@ Note: the certificate must include the `usages` they include in the example.
 ➜ helm install --namespace archie --create-namespace --name nats nats-io/nats -f - <<-EOF
 ---
 auth:
+  enabled: true
   basic:
     users:
-    - password: rrrrr
-      user: root
-    - password: ppppp
+    - user: root
+      password: zzzzz
+    - user: archie-pub
+      password: pub-password
       permissions:
         publish:
         - archie-minio-events
         subscribe:
         - _INBOX.>
-      user: archie-pub
-    - password: sssss
+    - user: archie-sub
+      password: sub-password
       permissions:
         allow_responses: true
         publish:
@@ -47,8 +49,6 @@ auth:
         subscribe:
         - _INBOX.>
         - archie-minio-events
-      user: archie-sub
-  enabled: true
 cluster:
   enabled: true
   replicas: 3
@@ -104,7 +104,7 @@ Configure MinIO to send NATS notifications to the NATS JetStream cluster.
   --set environment.MINIO_NOTIFY_NATS_ADDRESS="nats.nats.svc.cluster.local:4222" \
   --set environment.MINIO_NOTIFY_NATS_SUBJECT=archie-minio-events \
   --set environment.MINIO_NOTIFY_NATS_USERNAME=archie-pub \
-  --set environment.MINIO_NOTIFY_NATS_PASSWORD=xxxxx \
+  --set environment.MINIO_NOTIFY_NATS_PASSWORD=pub-password \
   --set environment.MINIO_NOTIFY_NATS_QUEUE_DIR=/notify/nats \
   --set environment.MINIO_NOTIFY_NATS_QUEUE_LIMIT=100000 \
   minio \
@@ -139,10 +139,12 @@ Archie will provision and enforce configuration on the NATS JetStream stream and
 ➜ helm install --namespace archie --create-namespace --name archie superleaguegaming/archie -f - <<-EOF
 ---
 jetstream:
-  durableConsumer: archie-consumer
-  stream: archie-stream
-  streamReplicas: 3
   subject: archie-minio-events
+  stream: 
+    name: archie-stream
+    replicas: 1
+  consumer
+    name: archie-consumer
   username: archie-sub
   password: sub-password
   metricsURL: nats.archie.svc.cluster.local:8222
@@ -154,16 +156,16 @@ keda:
   trigger:
     lagThreshold: 6
 source:
-  accessKey: xxxx
-  bucket: source-bucket
-  endpoint: source.endpoint
   name: source # just a label
+  endpoint: source.endpoint
+  bucket: source-bucket
+  accessKey: xxxx
   secretAccessKey: xxxx
   useSSL: false
 destination:
-  accessKey: xxxx
-  bucket: destination-bucket
-  endpoint: destination.endpoint
   name: destination # just a label
+  endpoint: destination.endpoint
+  bucket: destination-bucket
+  accessKey: xxxx
   secretAccessKey: xxxx
 ```
