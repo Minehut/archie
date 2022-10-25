@@ -13,7 +13,7 @@ app features:
 * ignore lifecycle expirations
 * exclude paths with pcre regex
 
-## install
+## deploy
 
 Check out the helm chart [INSTALL.md](INSTALL.md)
 
@@ -22,6 +22,10 @@ chart features:
 * keda `ScaledObject` deployment scaler
 * prometheus `ServiceMonitor` metrics
 * prometheus `PrometheusRules` alerts
+
+## usage
+
+For CLI and `config.yaml` settings visit [CONFIGURE.md](CONFIGURE.md)
 
 ## queue
 
