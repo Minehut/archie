@@ -32,7 +32,7 @@ var (
 		Subsystem: subSystem,
 		Name:      "messages_transfer_rate",
 		Help:      "a histogram of file transfer speed in kbytes/second",
-		Buckets:   []float64{500, 1_000, 5_000, 10_000, 12_000, 15_000, 20_000, 25_000, 30_000, 50_000},
+		Buckets:   []float64{500, 1_000, 5_000, 10_000, 12_000, 15_000, 20_000, 25_000, 30_000, 50_000, 70_000},
 	})
 	messagesTransferSizeMetric = promauto.NewHistogram(prometheus.HistogramOpts{
 		Subsystem: subSystem,

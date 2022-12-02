@@ -114,6 +114,7 @@ source:
   useSSL: true
 #  accessKey:
 #  secretKey:
+#  googleCredentials:
 
 destination:
   name: dest # just a label
@@ -124,6 +125,7 @@ destination:
   partSize: 16 # MiB
 #  accessKey:
 #  secretKey:
+#  googleCredentials:
 
 imagePullSecrets: []
 nameOverride: ""

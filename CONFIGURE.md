@@ -103,16 +103,24 @@ src:
   useSSL: false
   accessKey: xxx
   secretKey: yyy
+  googleCredentials: |
+    {
+      "type": "service_account",
+      "project_id": "xxx",
+      "private_key_id": "123"
+      ...
+    }
 ```
 
-| Flag        | Description                            |
-|-------------|----------------------------------------|
-| `name`      | label name for the file source         |
-| `endpoint`  | endpoint (default: localhost:9000)     |
-| `useSSL`    | enable ssl connection (default: false) |
-| `bucket`    | bucket name                            |
-| `accessKey` | access key                             |
-| `secretKey` | secret access key                      |
+| Flag                | Description                                       |
+|---------------------|---------------------------------------------------|
+| `name`              | label name for the file source                    |
+| `endpoint`          | endpoint (default: localhost:9000)                |
+| `useSSL`            | enable ssl connection (default: false)            |
+| `bucket`            | bucket name                                       |
+| `accessKey`         | aws access key                                    |
+| `secretKey`         | aws secret access key                             |
+| `googleCredentials` | service account or refresh token JSON credentials |
 
 
 ### Transfer Destination Options
@@ -127,19 +135,26 @@ dest:
   partSize: 16
   accessKey: xxx
   secretKey: yyy
+  googleCredentials: |
+    {
+      "type": "service_account",
+      "project_id": "xxx",
+      "private_key_id": "123"
+      ...
+    }
 ```
 
-| Flag        | Description                                    |
-|-------------|------------------------------------------------|
-| `name`      | label name for the file source                 |
-| `endpoint`  | endpoint (default: localhost:9000)             |
-| `useSSL`    | enable ssl connection (default: false)         |
-| `bucket`    | bucket name                                    |
-| `accessKey` | access key                                     |
-| `secretKey` | secret access key                              |
-| `threads`   | number of transfer threads (default: 4)        |
-| `partSize`  | size of parts for uploads in MiB (default: 16) |
-
+| Flag                | Description                                       |
+|---------------------|---------------------------------------------------|
+| `name`              | label name for the file source                    |
+| `endpoint`          | endpoint (default: localhost:9000)                |
+| `useSSL`            | enable ssl connection (default: false)            |
+| `bucket`            | bucket name                                       |
+| `accessKey`         | aws access key                                    |
+| `secretKey`         | aws secret access key                             |
+| `threads`           | number of transfer threads (default: 4)           |
+| `partSize`          | size of parts for uploads in MiB (default: 16)    |
+| `googleCredentials` | service account or refresh token JSON credentials |
 
 ### Health Check Server Options
 
