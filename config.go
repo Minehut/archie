@@ -11,7 +11,7 @@ type Config struct {
 	Src struct {
 		AccessKey         string `fig:"accessKey"`
 		Bucket            string `fig:"bucket"`
-		Endpoint          string `fig:"endpoint" default:"localhost:9000"`
+		Endpoint          string `fig:"endpoint"`
 		GoogleCredentials string `fig:"googleCredentials"`
 		Name              string `fig:"name" default:"destination"`
 		SecretKey         string `fig:"secretKey"`
@@ -21,7 +21,7 @@ type Config struct {
 	Dest struct {
 		AccessKey         string `fig:"accessKey"`
 		Bucket            string `fig:"bucket"`
-		Endpoint          string `fig:"endpoint" default:"localhost:9000"`
+		Endpoint          string `fig:"endpoint"`
 		GoogleCredentials string `fig:"googleCredentials"`
 		Name              string `fig:"name" default:"source"`
 		PartSize          uint64 `fig:"partSize" default:"16"`
