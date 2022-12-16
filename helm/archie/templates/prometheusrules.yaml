@@ -27,7 +27,7 @@ spec:
   - name: minio.rules
     rules:
     - alert: ArchieMinioNotifyQueueFilesTooHigh
-      expr: sum(minio_notify_nats_queue_count) by (job, directory) > {{ .Values.archie.prometheusRules.rules.minioNotifyQueueFilesThreshold }}
+      expr: sum(minio_notify_nats_queue_count{id="{{ .Values.archie.env }}"}) by (job, id) > {{ .Values.archie.prometheusRules.rules.minioNotifyQueueFilesThreshold }}
       for: 1m
       labels:
         severity: warning
@@ -40,7 +40,7 @@ spec:
     rules:
     - alert: ArchieNatsConsumerPendingMessagesTooHigh
       expr: |
-        nats_consumer_num_pending{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"} >
+        nats_consumer_num_pending{stream_name="archie-stream",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="archie"} >
           {{ .Values.archie.prometheusRules.rules.natsMessagesPendingThreshold }}
       for: 1m
       labels:
@@ -52,7 +52,7 @@ spec:
 
     - alert: ArchieNatsConsumerAckPendingMessagesTooHigh
       expr: |
-        nats_consumer_num_ack_pending{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"} >
+        nats_consumer_num_ack_pending{stream_name="archie-stream",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="archie"} >
           {{ .Values.archie.prometheusRules.rules.natsMessagesAckPendingThreshold }}
       for: 1m
       labels:
@@ -64,8 +64,8 @@ spec:
 
     - alert: ArchieNatsConsumerRedeliveredMessagePercentageTooHigh
       expr: |
-        rate(nats_consumer_num_redelivered{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"}[1m]) /
-          rate(nats_consumer_delivered_stream_seq{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"}[1m]) >
+        rate(nats_consumer_num_redelivered{stream_name="archie-stream",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="archie"}[1m]) /
+          rate(nats_consumer_delivered_stream_seq{stream_name="archie-stream",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="archie"}[1m]) >
           {{ .Values.archie.prometheusRules.rules.natsMessagesRedeliveredPercentageThreshold }}
       for: 1m
       labels:
@@ -77,7 +77,7 @@ spec:
 
     - alert: ArchieNatsConsumerDeliveredMessagesTooLow
       expr: |
-        sum(increase(nats_consumer_delivered_consumer_seq{stream_name="archie-stream",is_consumer_leader="true",consumer_name="b2",namespace="archie"}[1m]))
+        sum(increase(nats_consumer_delivered_consumer_seq{stream_name="archie-stream",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="archie"}[1m]))
           by (account, cluster, consumer_name, is_consumer_leader, is_stream_leader, stream_name) <
           {{ .Values.archie.prometheusRules.rules.natsMessagesDeliveredLowThreshold }}
       for: 10m
