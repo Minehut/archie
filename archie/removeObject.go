@@ -3,19 +3,12 @@ package archie
 import (
 	"archie/event"
 	"context"
-	"github.com/minio/minio-go/v7"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"time"
 )
 
-func (a *Archiver) removeObject(
-	ctx context.Context,
-	mLog zerolog.Logger,
-	eventObjKey string,
-	msg *nats.Msg,
-	record event.Record,
-) (error, string, AckType) {
+func (a *Archiver) removeObject(ctx context.Context, mLog zerolog.Logger, eventObjKey string, msg *nats.Msg, record event.Record) (error, string, AckType) {
 	metadata, _ := msg.Metadata()
 
 	if a.SkipLifecycleExpired && record.Source.Host == "Internal: [ILM-EXPIRY]" {
@@ -47,9 +40,13 @@ func (a *Archiver) removeObject(
 
 	start := time.Now()
 
-	err := a.DestClient.RemoveObject(ctx, a.DestBucket, eventObjKey, minio.RemoveObjectOptions{})
+	err := a.DestClient.RemoveObject(ctx, a.DestBucket, eventObjKey)
 	if err != nil {
 		if err.Error() == "The specified key does not exist." {
+			// minio error
+			return err, "Failed to RemoveObject from destination bucket", FiveNakThenTerm
+		} else if err.Error() == "storage: object doesn't exist" {
+			// gcs error
 			return err, "Failed to RemoveObject from destination bucket", FiveNakThenTerm
 		} else {
 			return err, "Failed to RemoveObject from destination bucket", Nak

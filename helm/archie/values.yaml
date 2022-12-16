@@ -21,6 +21,7 @@ archie:
   # disable the deployment
   deployment:
     create: true
+  env: dev
   healthCheck:
     enabled: true
     port: 8080
@@ -110,20 +111,22 @@ keda:
 source:
   name: src # just a label
   bucket: src-test
-  endpoint: localhost
+  endpoint: ""
   useSSL: true
 #  accessKey:
 #  secretKey:
+#  googleCredentials:
 
 destination:
   name: dest # just a label
   bucket: dest-test
-  endpoint: localhost
+  endpoint: ""
   useSSL: true
   threads: 4
   partSize: 16 # MiB
 #  accessKey:
 #  secretKey:
+#  googleCredentials:
 
 imagePullSecrets: []
 nameOverride: ""

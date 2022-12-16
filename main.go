@@ -113,17 +113,29 @@ func main() {
 	var srcHealthCheckCancel, destHealthCheckCancel context.CancelFunc
 
 	// source
-	a.SrcClient, srcHealthCheckCancel = client.MinIO(
+	var c client.Client
+	if cfg.Src.GoogleCredentials != "" {
+		c = &client.GCS{}
+	} else {
+		c = &client.Minio{}
+	}
+
+	srcHealthCheckCancel = c.New(
 		baseCtx,
 		cfg.Src.Name,
 		cfg.Src.Bucket,
 		cfg.Src.Endpoint,
-		cfg.Src.AccessKey,
-		cfg.Src.SecretKey,
+		client.Credentials{
+			MinioSecretAccessKey: cfg.Src.SecretKey,
+			MinioAccessKey:       cfg.Src.AccessKey,
+			GoogleCredentials:    cfg.Src.GoogleCredentials,
+		},
 		cfg.Src.UseSSL,
 		client.Params{},
 		zerolog.GlobalLevel(),
 	)
+
+	a.SrcClient = c
 
 	defer func() {
 		log.Trace().Msg("Deferred source health check context canceled")
@@ -131,13 +143,23 @@ func main() {
 	}()
 
 	// destination
-	a.DestClient, destHealthCheckCancel = client.MinIO(
+	var d client.Client
+	if cfg.Dest.GoogleCredentials != "" {
+		d = &client.GCS{}
+	} else {
+		d = &client.Minio{}
+	}
+
+	destHealthCheckCancel = d.New(
 		baseCtx,
 		cfg.Dest.Name,
 		cfg.Dest.Bucket,
 		cfg.Dest.Endpoint,
-		cfg.Dest.AccessKey,
-		cfg.Dest.SecretKey,
+		client.Credentials{
+			MinioSecretAccessKey: cfg.Dest.SecretKey,
+			MinioAccessKey:       cfg.Dest.AccessKey,
+			GoogleCredentials:    cfg.Dest.GoogleCredentials,
+		},
 		cfg.Dest.UseSSL,
 		client.Params{
 			Threads:  cfg.Dest.Threads,
@@ -145,6 +167,8 @@ func main() {
 		},
 		zerolog.GlobalLevel(),
 	)
+
+	a.DestClient = d
 
 	defer func() {
 		log.Trace().Msg("Deferred destination health check context canceled")

@@ -1,14 +1,14 @@
 package archie
 
 import (
-	"github.com/minio/minio-go/v7"
+	"archie/client"
 	"go.arsenm.dev/pcre"
 	"sync"
 )
 
 type Archiver struct {
 	DestBucket           string
-	DestClient           *minio.Client
+	DestClient           client.Client
 	DestName             string
 	DestPartSize         uint64
 	DestThreads          uint
@@ -18,7 +18,7 @@ type Archiver struct {
 	MsgTimeout           string
 	SkipLifecycleExpired bool
 	SrcBucket            string
-	SrcClient            *minio.Client
+	SrcClient            client.Client
 	SrcName              string
 	WaitGroup            *sync.WaitGroup
 	ExcludePaths         struct {

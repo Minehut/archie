@@ -9,23 +9,25 @@ type Config struct {
 	SkipLifecycleExpired bool   `fig:"skipLifecycleExpired"`
 
 	Src struct {
-		AccessKey string `fig:"accessKey"`
-		Bucket    string `fig:"bucket"`
-		Endpoint  string `fig:"endpoint" default:"localhost:9000"`
-		Name      string `fig:"name" default:"destination"`
-		SecretKey string `fig:"secretKey"`
-		UseSSL    bool   `fig:"useSSL"`
+		AccessKey         string `fig:"accessKey"`
+		Bucket            string `fig:"bucket"`
+		Endpoint          string `fig:"endpoint" default:"localhost:9000"`
+		GoogleCredentials string `fig:"googleCredentials"`
+		Name              string `fig:"name" default:"destination"`
+		SecretKey         string `fig:"secretKey"`
+		UseSSL            bool   `fig:"useSSL"`
 	}
 
 	Dest struct {
-		AccessKey string `fig:"accessKey"`
-		Bucket    string `fig:"bucket"`
-		Endpoint  string `fig:"endpoint" default:"localhost:9000"`
-		Name      string `fig:"name" default:"source"`
-		PartSize  uint64 `fig:"partSize" default:"16"`
-		SecretKey string `fig:"secretKey"`
-		Threads   uint   `fig:"threads" default:"4"`
-		UseSSL    bool   `fig:"useSSL"`
+		AccessKey         string `fig:"accessKey"`
+		Bucket            string `fig:"bucket"`
+		Endpoint          string `fig:"endpoint" default:"localhost:9000"`
+		GoogleCredentials string `fig:"googleCredentials"`
+		Name              string `fig:"name" default:"source"`
+		PartSize          uint64 `fig:"partSize" default:"16"`
+		SecretKey         string `fig:"secretKey"`
+		Threads           uint   `fig:"threads" default:"4"`
+		UseSSL            bool   `fig:"useSSL"`
 	}
 
 	ExcludePaths struct {

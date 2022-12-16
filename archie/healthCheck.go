@@ -1,11 +1,11 @@
 package archie
 
 import (
+	"archie/client"
 	"encoding/json"
 	"fmt"
 	"github.com/InVisionApp/go-health/v2"
 	"github.com/InVisionApp/go-health/v2/handlers"
-	"github.com/minio/minio-go/v7"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 
@@ -17,8 +17,8 @@ import (
 type HealthCheckStatusListener struct{}
 
 type readinessCheck struct {
-	DestClient    *minio.Client
-	SrcClient     *minio.Client
+	DestClient    client.Client
+	SrcClient     client.Client
 	jetStreamConn *nats.Conn
 }
 

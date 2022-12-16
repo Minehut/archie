@@ -13,7 +13,9 @@ func JetStream(
 	msgTimeout, streamRetention, streamRepublishSubject string,
 	provisioningDisabled bool,
 ) (*nats.Subscription, *nats.Conn) {
-	var connectOptions []nats.Option
+	// reconnect forever
+	connectOptions := []nats.Option{nats.MaxReconnects(-1)}
+
 	if rootCA != "" {
 		connectOptions = append(connectOptions, nats.RootCAs(rootCA))
 	}
@@ -34,14 +36,15 @@ func JetStream(
 	}
 
 	accountInfo, err := jetStream.AccountInfo()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to get JetStream account info")
+	}
+
 	log.Info().Uint64("memory", accountInfo.Tier.Memory).
 		Uint64("storage", accountInfo.Tier.Store).
 		Int("streams", accountInfo.Tier.Streams).
 		Int("consumers", accountInfo.Tier.Consumers).
 		Msg("JetStream account info")
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to get JetStream account info")
-	}
 
 	if !provisioningDisabled {
 		// build the stream
