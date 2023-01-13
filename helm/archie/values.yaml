@@ -21,7 +21,6 @@ archie:
   # disable the deployment
   deployment:
     create: true
-  env: dev
   healthCheck:
     enabled: true
     port: 8080
@@ -45,7 +44,6 @@ archie:
     dashboard: https://www.grafana.com/d/0000000/archie
     rules:
       archieMessagesProcessedFailedThreshold: 30
-      minioNotifyQueueFilesThreshold: 10000
       natsMessagesAckPendingThreshold: 500
       natsMessagesDeliveredLowThreshold: 30
       natsMessagesPendingThreshold: 20000
