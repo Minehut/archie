@@ -2,13 +2,15 @@ package archie
 
 import (
 	"archie/client"
+	"archie/event"
 	"context"
+	"fmt"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"time"
 )
 
-func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObjKey string, msg *nats.Msg) (error, string, AckType) {
+func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObjKey string, msg *nats.Msg, record event.Record) (error, string, AckType) {
 	metadata, _ := msg.Metadata()
 
 	for _, excludedPathRegexp := range a.ExcludePaths.CopyObject {
@@ -38,12 +40,20 @@ func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObj
 	if err != nil {
 		if err.Error() == "The specified key does not exist." {
 			// minio error
-			return err, "Failed to Stat the source object", FiveNakThenTerm
+			return err, "Failed to Stat the source object", NakThenTerm
 		} else if err.Error() == "storage: object doesn't exist" {
 			// gcs error
-			return err, "Failed to Stat the source object", FiveNakThenTerm
+			return err, "Failed to Stat the source object", NakThenTerm
 		} else {
 			return err, "Failed to Stat the source object", Nak
+		}
+	}
+
+	if a.WaitForMatchingETag {
+		if srcStat.ETag != record.S3.Object.ETag {
+			return fmt.Errorf(
+				"mismatch of ETags from the event (%s) and source (%s)", record.S3.Object.ETag, srcStat.ETag,
+			), "ETag mismatch", Nak
 		}
 	}
 
@@ -58,6 +68,10 @@ func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObj
 		ContentType: srcStat.ContentType,
 		NumThreads:  a.DestThreads,
 		PartSize:    destPartSizeBytes,
+	}
+
+	if record.S3.Object.ETag != "" {
+		putOpts.ETag = record.S3.Object.ETag
 	}
 
 	start = time.Now()

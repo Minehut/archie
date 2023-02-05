@@ -22,12 +22,14 @@ type Object interface {
 
 type PutOptions struct {
 	ContentType string
+	ETag        string
 	NumThreads  uint
 	PartSize    uint64
 }
 
 type ObjectInfo struct {
 	ContentType string
+	ETag        string
 	Size        int64
 }
 

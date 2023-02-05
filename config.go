@@ -3,10 +3,13 @@ package main
 type Config struct {
 	ApiVersion string `fig:"apiVersion" validate:"required"`
 
-	LogLevel             string `fig:"logLevel" default:"info"`
-	MsgTimeout           string `fig:"msgTimeout" default:"30m"`
-	ShutdownWait         string `fig:"shutdownWait" default:"0s"`
-	SkipLifecycleExpired bool   `fig:"skipLifecycleExpired"`
+	LogLevel                  string `fig:"logLevel" default:"info"`
+	MaxRetries                uint64 `fig:"maxRetries" default:"5"`
+	MsgTimeout                string `fig:"msgTimeout" default:"30m"`
+	ShutdownWait              string `fig:"shutdownWait" default:"0s"`
+	SkipEventBucketValidation bool   `fig:"skipEventBucketValidation"`
+	SkipLifecycleExpired      bool   `fig:"skipLifecycleExpired"`
+	WaitForMatchingETag       bool   `fig:"waitForMatchingETag"`
 
 	Src struct {
 		AccessKey         string `fig:"accessKey"`

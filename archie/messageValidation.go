@@ -18,8 +18,10 @@ func (a *Archiver) validateEventName(event event.Minio) error {
 
 // validate src bucket name in config matches event bucket name
 func (a *Archiver) validateEventBucket(eventBucket string) error {
-	if a.SrcBucket != eventBucket {
-		return fmt.Errorf("event bucket (%s) doesn't match configured source bucket (%s)", eventBucket, a.SrcBucket)
+	if !a.SkipEventBucketValidation {
+		if a.SrcBucket != eventBucket {
+			return fmt.Errorf("event bucket (%s) doesn't match configured source bucket (%s)", eventBucket, a.SrcBucket)
+		}
 	}
 	return nil
 }

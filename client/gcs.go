@@ -121,7 +121,7 @@ func (o *GCSObject) Stat(ctx context.Context) (*ObjectInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ObjectInfo{Size: obj.Size, ContentType: obj.ContentType}, nil
+	return &ObjectInfo{Size: obj.Size, ContentType: obj.ContentType, ETag: obj.Etag}, nil
 }
 
 func (o *GCSObject) GetReader() io.Reader {
