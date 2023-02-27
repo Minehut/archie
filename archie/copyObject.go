@@ -51,9 +51,16 @@ func (a *Archiver) copyObject(ctx context.Context, mLog zerolog.Logger, eventObj
 
 	if a.WaitForMatchingETag {
 		if srcStat.ETag != record.S3.Object.ETag {
-			return fmt.Errorf(
-				"mismatch of ETags from the event (%s) and source (%s)", record.S3.Object.ETag, srcStat.ETag,
-			), "ETag mismatch", Nak
+			mLog.Info().
+				Uint64("numDelivered", metadata.NumDelivered).
+				Str("queueDuration", time.Now().Sub(metadata.Timestamp).String()).
+				Dict("etagDiff", zerolog.Dict().
+					Str("event", record.S3.Object.ETag).
+					Str("source", srcStat.ETag),
+				).
+				Msg("The event and source ETag do not match")
+
+			return fmt.Errorf("eTag mismatch between event and source"), "ETAG_MISMATCH", NakThenTerm
 		}
 	}
 

@@ -81,7 +81,7 @@ func (m *Minio) PutObject(ctx context.Context, bucket string, key string, reader
 
 	if opts.ETag != "" {
 		putOpts.UserMetadata = map[string]string{
-			"eTag": opts.ETag,
+			"Minio-Etag": opts.ETag,
 		}
 	}
 	_, err := m.client.PutObject(ctx, bucket, key, reader, objectSize, putOpts)
@@ -112,7 +112,10 @@ func (o *MinioObject) Stat(ctx context.Context) (*ObjectInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ObjectInfo{Size: srcStat.Size, ContentType: srcStat.ContentType, ETag: srcStat.ETag}, nil
+
+	userMeta := srcStat.UserMetadata
+
+	return &ObjectInfo{Size: srcStat.Size, ContentType: srcStat.ContentType, ETag: userMeta["Minio-Etag"]}, nil
 }
 
 func (o *MinioObject) GetReader() io.Reader {
