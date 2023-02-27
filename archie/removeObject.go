@@ -44,10 +44,10 @@ func (a *Archiver) removeObject(ctx context.Context, mLog zerolog.Logger, eventO
 	if err != nil {
 		if err.Error() == "The specified key does not exist." {
 			// minio error
-			return err, "Failed to RemoveObject from destination bucket", FiveNakThenTerm
+			return err, "Failed to RemoveObject from destination bucket", NakThenTerm
 		} else if err.Error() == "storage: object doesn't exist" {
 			// gcs error
-			return err, "Failed to RemoveObject from destination bucket", FiveNakThenTerm
+			return err, "Failed to RemoveObject from destination bucket", NakThenTerm
 		} else {
 			return err, "Failed to RemoveObject from destination bucket", Nak
 		}

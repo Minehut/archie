@@ -4,6 +4,7 @@ import (
 	"archie/archie"
 	"archie/client"
 	"context"
+	"encoding/json"
 	"flag"
 	"github.com/kkyr/fig"
 	"github.com/rs/zerolog"
@@ -88,19 +89,54 @@ func main() {
 		msgCancel()
 	}()
 
+	// log all config settings
+	redactedCfg := cfg
+
+	if redactedCfg.Src.AccessKey != "" {
+		redactedCfg.Src.AccessKey = "REDACTED"
+	}
+	if redactedCfg.Src.SecretKey != "" {
+		redactedCfg.Src.SecretKey = "REDACTED"
+	}
+	if redactedCfg.Src.GoogleCredentials != "" {
+		redactedCfg.Src.GoogleCredentials = "REDACTED"
+	}
+	if redactedCfg.Dest.AccessKey != "" {
+		redactedCfg.Dest.AccessKey = "REDACTED"
+	}
+	if redactedCfg.Dest.SecretKey != "" {
+		redactedCfg.Dest.SecretKey = "REDACTED"
+	}
+	if redactedCfg.Dest.GoogleCredentials != "" {
+		redactedCfg.Dest.GoogleCredentials = "REDACTED"
+	}
+	if redactedCfg.Jetstream.Password != "" {
+		redactedCfg.Jetstream.Password = "REDACTED"
+	}
+
+	redactedCfgJSON, err := json.Marshal(redactedCfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to marshal config to json")
+	}
+
+	log.Info().RawJSON("cfg", redactedCfgJSON).Msg("Startup configuration")
+
 	// archiver
 	a := archie.Archiver{
-		DestBucket:           cfg.Dest.Bucket,
-		DestName:             cfg.Dest.Name,
-		DestPartSize:         cfg.Dest.PartSize,
-		DestThreads:          cfg.Dest.Threads,
-		FetchDone:            make(chan string, 1),
-		HealthCheckDisabled:  cfg.HealthCheck.Disabled,
-		MsgTimeout:           cfg.MsgTimeout,
-		SkipLifecycleExpired: cfg.SkipLifecycleExpired,
-		SrcBucket:            cfg.Src.Bucket,
-		SrcName:              cfg.Src.Name,
-		WaitGroup:            &sync.WaitGroup{},
+		DestBucket:                cfg.Dest.Bucket,
+		DestName:                  cfg.Dest.Name,
+		DestPartSize:              cfg.Dest.PartSize,
+		DestThreads:               cfg.Dest.Threads,
+		FetchDone:                 make(chan string, 1),
+		HealthCheckDisabled:       cfg.HealthCheck.Disabled,
+		MaxRetries:                cfg.MaxRetries,
+		MsgTimeout:                cfg.MsgTimeout,
+		SkipEventBucketValidation: cfg.SkipEventBucketValidation,
+		SkipLifecycleExpired:      cfg.SkipLifecycleExpired,
+		SrcBucket:                 cfg.Src.Bucket,
+		SrcName:                   cfg.Src.Name,
+		WaitForMatchingETag:       cfg.WaitForMatchingETag,
+		WaitGroup:                 &sync.WaitGroup{},
 		ExcludePaths: struct {
 			CopyObject   []*pcre.Regexp
 			RemoveObject []*pcre.Regexp

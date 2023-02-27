@@ -9,8 +9,10 @@ image:
 
 archie:
   logLevel: info # or "debug" or "trace"
+  maxRetries: 5  # for all terminating actions
   msgTimeout: 30m
   shutdownWait: 30 # seconds
+  skipEventBucketValidation: false
   skipLifecycleExpired: false
   # pcre regex matching
   #excludePaths:
@@ -48,6 +50,7 @@ archie:
       natsMessagesDeliveredLowThreshold: 30
       natsMessagesPendingThreshold: 20000
       natsMessagesRedeliveredPercentageThreshold: 2
+  waitForMatchingETag: false
 
 jetstream:
   url: nats://localhost:4222

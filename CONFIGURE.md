@@ -29,13 +29,16 @@ apiVersion: v1
 
 logLevel: info
 shutdownWait: 30s
+skipEventBucketValidation: true
 skipLifecycleExpired: true
+maxRetries: 5
 msgTimeout: 15m
 excludePaths:
   copyObject:
     - ^\w{3}/(\w+)/\1\.tar\.zst$
   removeObject:
     - ^\w{3}/(\w+)/\1\.tar\.zst$
+waitForMatchingETag: false
 ```
 
 | Setting                     | Description                                                                                                             |
@@ -43,10 +46,13 @@ excludePaths:
 | `apiVersion`                | config file api version (required)                                                                                      |
 | `logLevel`                  | set the log level (default: info)                                                                                       |
 | `shutdownWait`              | time to wait for running transfers to complete before exiting                                                           |
+| `skipEventBucketValidation` | don't check if the event's bucket name and source bucket name match                                                     |
 | `skipLifecycleExpired`      | don't propagate deletes initiated by the minio lifecycle expiration                                                     |
+| `maxRetries`                | the max retries for to retry when either the copy's source object or the object to be deleted are missing               |
 | `msgTimeout`                | the max duration for a transfer includes the jetstream stream message ack timeout and internal transfer context timeout |
 | `excludePaths.copyObject`   | list of paths as regex patterns to exclude from copy operations   (pcre support)                                        |
 | `excludePaths.removeObject` | list of paths as regex patterns to exclude from delete operations (pcre support)                                        |
+| `waitForMatchingETag`       | when copying files wait for the matching etag                                                                           |
 
 
 ### JetStream Options

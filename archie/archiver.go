@@ -7,21 +7,24 @@ import (
 )
 
 type Archiver struct {
-	DestBucket           string
-	DestClient           client.Client
-	DestName             string
-	DestPartSize         uint64
-	DestThreads          uint
-	FetchDone            chan string
-	HealthCheckDisabled  bool
-	IsOffline            bool
-	MsgTimeout           string
-	SkipLifecycleExpired bool
-	SrcBucket            string
-	SrcClient            client.Client
-	SrcName              string
-	WaitGroup            *sync.WaitGroup
-	ExcludePaths         struct {
+	DestBucket                string
+	DestClient                client.Client
+	DestName                  string
+	DestPartSize              uint64
+	DestThreads               uint
+	FetchDone                 chan string
+	HealthCheckDisabled       bool
+	IsOffline                 bool
+	MaxRetries                uint64
+	MsgTimeout                string
+	SkipEventBucketValidation bool
+	SkipLifecycleExpired      bool
+	SrcBucket                 string
+	SrcClient                 client.Client
+	SrcName                   string
+	WaitForMatchingETag       bool
+	WaitGroup                 *sync.WaitGroup
+	ExcludePaths              struct {
 		CopyObject   []*pcre.Regexp
 		RemoveObject []*pcre.Regexp
 	}
@@ -34,7 +37,7 @@ const (
 	Nak
 	SkipAck
 	Term
-	FiveNakThenTerm
+	NakThenTerm
 	None
 )
 
@@ -46,8 +49,8 @@ func (s AckType) String() string {
 		return "nak"
 	case Term:
 		return "term"
-	case FiveNakThenTerm:
-		return "5nak_then_term"
+	case NakThenTerm:
+		return "nak_then_term"
 	case None:
 		return "none"
 	}

@@ -100,7 +100,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 		// message type router
 		switch eventType {
 		case "s3:ObjectCreated":
-			err, execContext, ack = a.copyObject(ctx, mLog, eventObjKey, msg)
+			err, execContext, ack = a.copyObject(ctx, mLog, eventObjKey, msg, eventRecord)
 			if err != nil {
 				s3ErrMsg, s3ErrCode = logS3Error(err, execContext, &mLog)
 			}
@@ -133,8 +133,8 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 		case Nak:
 			sendNakSignal(msg, &mLog)
 			a.cleanupAndCountMessagesProcessedMetric("failed", s3ErrMsg, s3ErrCode, event.EventName, eventType)
-		case FiveNakThenTerm:
-			maxDelivered := uint64(5)
+		case NakThenTerm:
+			maxDelivered := a.MaxRetries - 1
 			if metadata.NumDelivered > maxDelivered {
 				mLog.Error().Uint64("numDelivered", metadata.NumDelivered).Msg("Reached max delivered")
 				termErr := sendTermSignal(msg, &mLog)
