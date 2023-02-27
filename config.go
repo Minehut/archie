@@ -3,6 +3,8 @@ package main
 type Config struct {
 	ApiVersion string `fig:"apiVersion" validate:"required"`
 
+	BackoffDurationMultiplier uint64 `fig:"backoffDurationMultiplier" default:"100"`
+	BackoffNumCeiling         uint64 `fig:"backoffNumCeiling" default:"15"` // 54m36.6s
 	LogLevel                  string `fig:"logLevel" default:"info"`
 	MaxRetries                uint64 `fig:"maxRetries" default:"5"`
 	MsgTimeout                string `fig:"msgTimeout" default:"30m"`

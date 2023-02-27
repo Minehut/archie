@@ -8,6 +8,8 @@ image:
 #  args: []
 
 archie:
+  backoffDurationMultiplier: 100
+  backoffNumCeiling: 15
   logLevel: info # or "debug" or "trace"
   maxRetries: 5  # for all terminating actions
   msgTimeout: 30m

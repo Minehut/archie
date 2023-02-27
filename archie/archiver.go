@@ -7,6 +7,8 @@ import (
 )
 
 type Archiver struct {
+	BackoffDurationMultiplier uint64
+	BackoffNumCeiling         uint64
 	DestBucket                string
 	DestClient                client.Client
 	DestName                  string

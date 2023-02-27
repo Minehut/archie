@@ -17,14 +17,14 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 	metadata, err := msg.Metadata()
 	if err != nil {
 		log.Error().Msg("Failed to retrieve metadata from the event message")
-		sendNakSignal(msg, &aLog)
+		sendNakSignal(msg, &aLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 		return
 	}
 
 	msgMetadata, err := json.Marshal(metadata)
 	if err != nil {
 		log.Error().Msg("Failed to marshal metadata to json")
-		sendNakSignal(msg, &aLog)
+		sendNakSignal(msg, &aLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 		return
 	}
 
@@ -37,7 +37,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 		} else {
 			log.Error().RawJSON("metadata", msgMetadata).Str("payload", string(msg.Data)).Err(err).Msg(errMsg)
 		}
-		sendNakSignal(msg, &aLog)
+		sendNakSignal(msg, &aLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 		eventObjKey, err := url.QueryUnescape(eventRecord.S3.Object.Key)
 		if err != nil {
 			mLog.Error().Err(err).Msg("Failed to unescape source object key from event")
-			sendNakSignal(msg, &mLog)
+			sendNakSignal(msg, &mLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 			continue
 		}
 
@@ -131,7 +131,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 			}
 			a.cleanupAndCountMessagesProcessedMetric("skipped", "", execContext, event.EventName, eventType)
 		case Nak:
-			sendNakSignal(msg, &mLog)
+			sendNakSignal(msg, &mLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 			a.cleanupAndCountMessagesProcessedMetric("failed", s3ErrMsg, s3ErrCode, event.EventName, eventType)
 		case NakThenTerm:
 			maxDelivered := a.MaxRetries - 1
@@ -142,9 +142,9 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 					// logging already happened
 					continue
 				}
-				a.cleanupAndCountMessagesProcessedMetric("terminated", fmt.Sprintf("Term %s", err.Error()), "INT_TERM5", event.EventName, eventType)
+				a.cleanupAndCountMessagesProcessedMetric("terminated", fmt.Sprintf("Term %s", s3ErrMsg), "INT_TERM5", event.EventName, eventType)
 			} else {
-				sendNakSignal(msg, &mLog)
+				sendNakSignal(msg, &mLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 				a.cleanupAndCountMessagesProcessedMetric("failed", s3ErrMsg, s3ErrCode, event.EventName, eventType)
 			}
 		case Term:
@@ -158,7 +158,7 @@ func (a *Archiver) message(ctx context.Context, msg *nats.Msg) {
 			continue
 		default:
 			mLog.Error().Msgf("Unable to process the %s ack type", ack)
-			sendNakSignal(msg, &mLog)
+			sendNakSignal(msg, &mLog, a.BackoffDurationMultiplier, a.BackoffNumCeiling)
 			a.cleanupAndCountMessagesProcessedMetric("failed", fmt.Sprintf("Unable to process %s ack type", ack), s3ErrCode, event.EventName, eventType)
 			continue
 		}

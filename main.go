@@ -123,6 +123,8 @@ func main() {
 
 	// archiver
 	a := archie.Archiver{
+		BackoffDurationMultiplier: cfg.BackoffDurationMultiplier,
+		BackoffNumCeiling:         cfg.BackoffNumCeiling,
 		DestBucket:                cfg.Dest.Bucket,
 		DestName:                  cfg.Dest.Name,
 		DestPartSize:              cfg.Dest.PartSize,

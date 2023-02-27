@@ -49,16 +49,15 @@ func sendTermSignal(msg *nats.Msg, mLog *zerolog.Logger) error {
 
 // msgs will continue to redeliver via this exponential backoff,
 // if the Nak fails just let jetstream redeliver after its timeout
-func sendNakSignal(msg *nats.Msg, mLog *zerolog.Logger) {
+func sendNakSignal(msg *nats.Msg, mLog *zerolog.Logger, backoffDurationMultiplier uint64, backoffNumCeiling uint64) {
 	metadata, _ := msg.Metadata()
-	var numDeliveredLimit uint64 = 15 // 54m36.6s
 
-	numDeliveredPower := numDeliveredLimit
-	if metadata.NumDelivered < numDeliveredLimit {
+	numDeliveredPower := backoffNumCeiling
+	if metadata.NumDelivered < backoffNumCeiling {
 		numDeliveredPower = metadata.NumDelivered
 	}
 
-	delay := time.Duration(int64(math.Pow(2, float64(numDeliveredPower)))) * 100 * time.Millisecond
+	delay := time.Duration(int64(math.Pow(2, float64(numDeliveredPower)))) * time.Duration(backoffDurationMultiplier) * time.Millisecond
 
 	mLog.Info().Msgf("Sending JetStream NAck signal and requesting redelivery in %s", delay.String())
 
