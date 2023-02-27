@@ -5,7 +5,7 @@ metadata:
   name: {{ include "archie.fullname" . }}-jetstream
   {{- if .Values.keda.pausedReplicas.enabled }}
   annotations:
-    autoscaling.keda.sh/paused-replicas: "{{ .Values.keda.pausedReplicas.replicas }}"
+    autoscaling.keda.sh/paused-replicas: {{ .Values.keda.pausedReplicas.replicas | quote }}
   {{- end }}
 spec:
   scaleTargetRef:
