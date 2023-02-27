@@ -53,7 +53,7 @@ spec:
     - alert: ArchieNatsConsumerRedeliveredMessagePercentageTooHigh
       expr: |
         rate(nats_consumer_num_redelivered{stream_name="{{ .Values.jetstream.stream.name }}",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="{{ .Release.Namespace }}"}[1m]) /
-          rate(nats_consumer_delivered_stream_seq{stream_name="{{ .Values.jetstream.stream.name }}",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="{{ .Release.Namespace }}"}[1m]) >
+          rate(nats_consumer_delivered_consumer_seq{stream_name="{{ .Values.jetstream.stream.name }}",is_consumer_leader="true",consumer_name="{{ .Values.jetstream.consumer.name }}",namespace="{{ .Release.Namespace }}"}[1m]) >
           {{ .Values.archie.prometheusRules.rules.natsMessagesRedeliveredPercentageThreshold }}
       for: 1m
       labels:
