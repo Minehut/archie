@@ -74,9 +74,10 @@ func (m *Minio) GetObject(ctx context.Context, bucket string, key string) (Objec
 
 func (m *Minio) PutObject(ctx context.Context, bucket string, key string, reader io.Reader, objectSize int64, opts PutOptions) (UploadInfo, error) {
 	putOpts := minio.PutObjectOptions{
-		ContentType: opts.ContentType,
-		NumThreads:  opts.NumThreads,
-		PartSize:    opts.PartSize,
+		ContentType:    opts.ContentType,
+		NumThreads:     opts.NumThreads,
+		PartSize:       opts.PartSize,
+		SendContentMd5: true,
 	}
 
 	if opts.ETag != "" {
