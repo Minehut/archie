@@ -24,6 +24,7 @@ archie:
   #  - '.*'
   # disable the deployment
   deployment:
+    annotations: {}
     create: true
   healthCheck:
     enabled: true
