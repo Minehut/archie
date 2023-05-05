@@ -14,14 +14,14 @@ spec:
     rules:
     - alert: ArchieMessagesProcessedFailed
       expr: |
-        sum(increase(archie_messages_processed_count{state!~"(success|skipped)"}[15m])) by (state, eventType) >
+        sum(increase(archie_messages_processed_count{state!~"(success|skipped)"}[15m])) by (state, eventType, job) >
           {{ .Values.archie.prometheusRules.rules.archieMessagesProcessedFailedThreshold }}
       for: 10m
       labels:
         severity: warning
       annotations:
         dashboard: {{ .Values.archie.prometheusRules.dashboard }}
-        description: {{`Archie {{$labels.state}} {{ $value }} messages for {{$labels.eventType}}`}}
+        description: {{`Archie {{$labels.state}} {{ $value }} messages for {{$labels.eventType}} by {{$labels.job}}`}}
         summary: The amount of of failed messages is too high
 
   - name: nats.rules
