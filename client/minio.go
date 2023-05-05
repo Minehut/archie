@@ -93,7 +93,13 @@ func (m *Minio) PutObject(ctx context.Context, bucket string, key string, reader
 }
 
 func (m *Minio) RemoveObject(ctx context.Context, bucket string, key string) error {
-	err := m.client.RemoveObject(ctx, bucket, key, minio.RemoveObjectOptions{})
+	// removeObject doesn't return an error if the key doesn't exist so check first
+	_, err := m.client.StatObject(ctx, bucket, key, minio.StatObjectOptions{})
+	if err != nil {
+		return err
+	}
+
+	err = m.client.RemoveObject(ctx, bucket, key, minio.RemoveObjectOptions{})
 	if err != nil {
 		return err
 	}
