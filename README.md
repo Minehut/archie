@@ -1,10 +1,17 @@
 # archie
 
-A scalable system to replicate files from MinIO buckets to any S3 compatible bucket using event notifications, NATS JetStream exactly-once delivery, and KEDA autoscaling in kubernetes.
+## summary 
+
+A file archiver for Kubernetes built around our scalable archie worker, used to synchronize files from 
+MinIO source buckets by way of MinIO's bucket event notifications, queued with NATS Jetstream durable stream, 
+and syncing files over to any S3 compatible or google storage destination bucket.
 
 app features:
-* replicate bucket data with minio-go
-  * copy and remove files
+* replicate bucket data from minio sources
+  * copy and remove 
+* replicate bucket data to multiple destinations
+  * minio and any aws s3 compatible
+  * google-storage
 * async healthcheck server
 * prometheus metrics server
 * nats jetstream provisioning
@@ -12,6 +19,22 @@ app features:
 * graceful shutdown wait timer
 * ignore lifecycle expirations
 * exclude paths with pcre regex
+
+## detailed
+
+A MinIO bucket can be configured to send bucket event notifications for (put & delete) activity to a NATS Jetstream cluster stream.
+The NATS Jetstream stream provides a place for the notification messages to queue where they are stored on persistent storage and it guarantees
+exactly-once delivery to the archie worker pool using a server-side max timeout retry. The archie workers use the same 
+NATS Jetstream durable consumer, each one requesting to pull a single event notification message at a time. In the event of a failure archie will
+inform the NATS server of the failure and the client-side will request a retry using a more rapid exponential backoff. 
+The process with only give up and terminate retries after the [maxRetries](CONFIGURE.md#server-options) in a few situations, 
+if the source file in MinIO doesn't exist on a copy, or if the destination file doesn't exist on a delete, any other errors 
+or timeouts will result in retrying forever or until the message is expired from the NATS Jetstream stream. 
+
+## notes
+
+The MinIO server does not need to be in Kubernetes, but it does need to be able to communicate with the NATS cluster to deliver the event 
+notifications to the stream. The NATS cluster could also exist outside of kubernetes, but I haven not tested this.
 
 ## deploy
 
@@ -41,8 +64,8 @@ Check out [DEVELOPER.md](DEVELOPER.md)
 
 ## known issues
 
-* KEDA needed a patch to fix the scaler for using jetstream in a cluster - [PR #3564](https://github.com/kedacore/keda/pull/3564) (waiting)
-* NATS-Exporter needed to pass the `first_seq` stream info - [PR #190](https://github.com/nats-io/prometheus-nats-exporter/pull/190) (merged)
 * NATS JetStream stream's first sequence metric is unstable - TODO: Create PR
-* MinIO doesn't reconnect to NATS server if it is down for a while - TODO: Create PR
 * PCRE Regex module somewhat limits our build OS and ARCH - [INFO](https://gitea.arsenm.dev/Arsen6331/pcre#supported-goos-goarch)
+* KEDA needed a patch to fix the scaler for using jetstream in a cluster - [PR #3564](https://github.com/kedacore/keda/pull/3564) (merged)
+* NATS-Exporter needed to pass the `first_seq` stream info - [PR #190](https://github.com/nats-io/prometheus-nats-exporter/pull/190) (merged)
+* MinIO doesn't reconnect to NATS server if it is down for a while - [PR #16050](https://github.com/minio/minio/pull/16050) (merged)
