@@ -1,16 +1,18 @@
 # archie
 
+![archie architecture diagram](diagram/archie-architecture.png)
+
 ## summary 
 
-A file archiver for Kubernetes built around our scalable archie worker, used to synchronize files from 
-MinIO source buckets by way of MinIO's bucket event notifications, queued with NATS Jetstream durable stream, 
-and syncing files over to any S3 compatible or google storage destination bucket.
+A file archiver for Kubernetes built around MinIO and our scalable archie worker used to archie files 
+from MinIO source buckets to any S3 compatible or Google Cloud Storage destination bucket by way of 
+MinIO's bucket event notifications, NATS JetStream's durable streams, and KEDA auto-scaling.
 
 app features:
 * replicate bucket data from minio sources
   * copy and remove 
 * replicate bucket data to multiple destinations
-  * minio and any aws s3 compatible
+  * minio or any aws s3 compatible
   * google-storage
 * async healthcheck server
 * prometheus metrics server
@@ -34,7 +36,7 @@ or timeouts will result in retrying forever or until the message is expired from
 ## notes
 
 The MinIO server does not need to be in Kubernetes, but it does need to be able to communicate with the NATS cluster to deliver the event 
-notifications to the stream. The NATS cluster could also exist outside of kubernetes, but I haven not tested this.
+notifications to the stream. The NATS cluster could also exist outside of Kubernetes, but I have not tested it.
 
 ## deploy
 
@@ -64,7 +66,7 @@ Check out [DEVELOPER.md](DEVELOPER.md)
 
 ## known issues
 
-* NATS JetStream stream's first sequence metric is unstable - TODO: Create PR
+* NATS JetStream stream's first sequence metric is unstable - TODO: Create PR (monitoring issue only)
 * PCRE Regex module somewhat limits our build OS and ARCH - [INFO](https://gitea.arsenm.dev/Arsen6331/pcre#supported-goos-goarch)
 * KEDA needed a patch to fix the scaler for using jetstream in a cluster - [PR #3564](https://github.com/kedacore/keda/pull/3564) (merged)
 * NATS-Exporter needed to pass the `first_seq` stream info - [PR #190](https://github.com/nats-io/prometheus-nats-exporter/pull/190) (merged)
